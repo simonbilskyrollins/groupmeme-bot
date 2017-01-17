@@ -5,9 +5,9 @@ var botID = process.env.BOT_ID;
 
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
-      botRegex = /^\/cool guy$/;
+      warriorsRegex = new RegExp(".*\bwarriors\b.*", "i");
 
-  if(request.text && botRegex.test(request.text)) {
+  if(request.text && warriorsRegex.test(request.text)) {
     this.res.writeHead(200);
     postMessage();
     this.res.end();
@@ -21,7 +21,7 @@ function respond() {
 function postMessage() {
   var botResponse, options, body, botReq;
 
-  botResponse = cool();
+  botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
 
   options = {
     hostname: 'api.groupme.com',
