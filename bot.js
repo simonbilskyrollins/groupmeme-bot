@@ -5,23 +5,30 @@ var botID = process.env.BOT_ID;
 
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
-      warriorsRegex = new RegExp(".*\\bwarriors\\b.*", "i");
+      warriorsRegex = new RegExp(".*\\bwarriors\\b.*", "i"),
+      wholesomeMemeRegex = new RegExp("", "i");
 
-  if(request.text && warriorsRegex.test(request.text)) {
+  var botResponse, messageType, imageUrl;
+
+  if (request.text && warriorsRegex.test(request.text)) {
+    botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
     this.res.writeHead(200);
-    //postMessage();
-    this.res.end();
+    postMessage(botResponse);
+  } else if (request.text && wholesomeMemeRegex.test(request.text)) {
+    botResponse = "I hope this meme brightens your day";
+    messageType = "image";
+    imageUrl = "";
+    this.res.writeHead(200);
+    postMessage(botResponse, messageType, imageUrl);
   } else {
-    console.log("don't care", request.text);
+    console.log("don't care: ", request.text);
     this.res.writeHead(200);
-    this.res.end();
   }
+  this.res.end();
 }
 
-function postMessage() {
-  var botResponse, options, body, botReq;
-
-  botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
+function postMessage(botResponse, messageType, imageUrl) {
+  var options, body, botReq;
 
   options = {
     hostname: 'api.groupme.com',
@@ -29,10 +36,24 @@ function postMessage() {
     method: 'POST'
   };
 
-  body = {
-    "bot_id" : botID,
-    "text" : botResponse
-  };
+  switch (messageType) {
+    case "image":
+      body = {
+        "bot_id" : botID,
+        "text" : botResponse,
+        "attachments" : [
+          {
+            "type"  : "image",
+            "url"   : imageUrl
+          }
+        ]
+      };
+    default:
+      body = {
+        "bot_id" : botID,
+        "text" : botResponse
+      };
+  }
 
   console.log('sending ' + botResponse + ' to ' + botID);
 
