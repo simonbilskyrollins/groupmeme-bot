@@ -6,7 +6,7 @@ var botID = process.env.BOT_ID;
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
       warriorsRegex = new RegExp(".*\\bwarriors\\b.*", "i"),
-      wholesomeMemeRegex = new RegExp("", "i");
+      wholesomeMemeRegex = new RegExp(".*\\bmeme\\b.*", "i");
 
   var botResponse, messageType, imageUrl;
 
@@ -19,7 +19,7 @@ function respond() {
     messageType = "image";
     imageUrl = "";
     this.res.writeHead(200);
-    postMessage(botResponse, messageType, imageUrl);
+    //postMessage(botResponse, messageType, imageUrl);
   } else {
     console.log("don't care: ", request.text);
     this.res.writeHead(200);
