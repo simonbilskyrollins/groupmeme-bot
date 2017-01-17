@@ -5,14 +5,14 @@ var botID = process.env.BOT_ID;
 
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
-      warriorsRegex = new RegExp(".*\bwarriors\b.*", "i");
+      warriorsRegex = new RegExp(".*\\bwarriors\\b.*", "i");
 
   if(request.text && warriorsRegex.test(request.text)) {
     this.res.writeHead(200);
-    postMessage();
+    //postMessage();
     this.res.end();
   } else {
-    console.log("don't care");
+    console.log("don't care", request.text);
     this.res.writeHead(200);
     this.res.end();
   }
