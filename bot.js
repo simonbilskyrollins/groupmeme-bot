@@ -30,7 +30,7 @@ function respond() {
     botResponse = "Too bad your immune system isn't as good as Steph's :("
     postMessage(botResponse);
   } else if (request.text && wholesomeMemeRegExp.test(request.text)) {
-    botResponse = "I hope this meme brightens your day";
+    botResponse = "I hope this brightens your day";
     messageType = "image";
     getMeme('wholesomememes', function(imageUrl) {
       processImage(imageUrl, function(err, processedImageUrl) {
