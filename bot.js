@@ -31,14 +31,13 @@ function respond() {
     postMessage(botResponse);
   } else if (request.text && wholesomeMemeRegExp.test(request.text)) {
     botResponse = "I hope this brightens your day";
-    messageType = "image";
     getMeme('wholesomememes', function(imageUrl) {
       processImage(imageUrl, function(err, processedImageUrl) {
         if (err) {
           return;
         } else {
           console.log('attaching ' + processedImageUrl);
-          postMessage(botResponse, messageType, processedImageUrl);
+          postMessage(botResponse, processedImageUrl);
         }
       })
     });
@@ -48,7 +47,7 @@ function respond() {
   this.res.end();
 }
 
-function postMessage(botResponse, messageType, imageUrl) {
+function postMessage(botResponse, imageUrl) {
   var options, body, botReq;
 
   options = {
@@ -57,24 +56,24 @@ function postMessage(botResponse, messageType, imageUrl) {
     method: 'POST'
   };
 
-  switch (messageType) {
-    case "image":
-      body = {
-        "bot_id" : botID,
-        "text" : botResponse,
-        "attachments" : [
-          {
-            "type"  : "image",
-            "url"   : imageUrl
-          }
-        ]
-      };
-    default:
-      body = {
-        "bot_id" : botID,
-        "text" : botResponse
-      };
+  if (imageUrl) {
+    body = {
+      "bot_id" : botID,
+      "text" : botResponse,
+      "attachments" : [
+        {
+          "type"  : "image",
+          "url"   : imageUrl
+        }
+      ]
+    };
+  } else {
+    body = {
+      "bot_id" : botID,
+      "text" : botResponse
+    };
   }
+  console.log(body);
 
   console.log('sending ' + botResponse + ' to ' + botID);
 
