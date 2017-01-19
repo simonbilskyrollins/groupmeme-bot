@@ -13,23 +13,21 @@ function respond() {
 
   var botResponse, messageType, imageUrl;
 
+  this.res.writeHead(200);
+  
   if (request.text && warriorsRegex.test(request.text)) {
     botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
-    this.res.writeHead(200);
     postMessage(botResponse);
   } else if (request.text && sickRegex.test(request.text)) {
     botResponse = "Too bad your immune system isn't as good as Steph's :("
-    this.res.writeHead(200);
     postMessage(botResponse);
   } else if (request.text && wholesomeMemeRegex.test(request.text)) {
     botResponse = "I hope this meme brightens your day";
     messageType = "image";
     imageUrl = "";
-    this.res.writeHead(200);
     //postMessage(botResponse, messageType, imageUrl);
   } else {
     console.log("don't care: ", request.text);
-    this.res.writeHead(200);
   }
   this.res.end();
 }
