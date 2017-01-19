@@ -1,31 +1,46 @@
 var HTTPS = require('https'),
     request = require('request'),
     fs = require('fs'),
-    ImageService = require('groupme').ImageService;
+    ImageService = require('groupme').ImageService,
+    snoowrap = require('snoowrap');
 
 var botID = process.env.BOT_ID;
 
+const r = new snoowrap({
+  userAgent: process.env.USER_AGENT,
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  refreshToken: process.env.REFRESH_TOKEN
+});
+
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
-      warriorsRegex = new RegExp(".*\\bwarriors\\b.*", "i"),
-      sickRegex = newRegExp(".*\\bsick\\b.*", "i"),
-      wholesomeMemeRegex = new RegExp(".*\\bmeme\\b.*", "i");
+      warriorsRegExp = new RegExp(".*\\bwarriors\\b.*", "i"),
+      sickRegExp = new RegExp(".*\\bsick\\b.*", "i"),
+      wholesomeMemeRegExp = new RegExp(".*\\bmeme\\b.*", "i");
 
   var botResponse, messageType, imageUrl;
 
   this.res.writeHead(200);
-  
-  if (request.text && warriorsRegex.test(request.text)) {
+
+  if (request.text && warriorsRegExp.test(request.text)) {
     botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
     postMessage(botResponse);
-  } else if (request.text && sickRegex.test(request.text)) {
+  } else if (request.text && sickRegExp.test(request.text)) {
     botResponse = "Too bad your immune system isn't as good as Steph's :("
     postMessage(botResponse);
-  } else if (request.text && wholesomeMemeRegex.test(request.text)) {
+  } else if (request.text && wholesomeMemeRegExp.test(request.text)) {
     botResponse = "I hope this meme brightens your day";
     messageType = "image";
-    imageUrl = "";
-    //postMessage(botResponse, messageType, imageUrl);
+    getMeme('wholesomememes', function(imageUrl) {
+      processImage(imageUrl, function(err, processedImageUrl) {
+        if (err) {
+          return;
+        } else {
+          postMessage(botResponse, messageType, processedImageUrl);
+        }
+      })
+    });
   } else {
     console.log("don't care: ", request.text);
   }
@@ -43,21 +58,16 @@ function postMessage(botResponse, messageType, imageUrl) {
 
   switch (messageType) {
     case "image":
-      processImage(imageUrl, function(err, processedImageUrl) {
-        if (err) {
-          return;
-        }
-        body = {
-          "bot_id" : botID,
-          "text" : botResponse,
-          "attachments" : [
-            {
-              "type"  : "image",
-              "url"   : processedImageUrl
-            }
-          ]
-        };
-      });
+      body = {
+        "bot_id" : botID,
+        "text" : botResponse,
+        "attachments" : [
+          {
+            "type"  : "image",
+            "url"   : imageUrl
+          }
+        ]
+      };
     default:
       body = {
         "bot_id" : botID,
@@ -102,6 +112,18 @@ function processImage(imageUrl, callback) {
   });
 }
 
+function getMeme(subreddit, callback) {
+  r.getSubreddit(subreddit).getHot().map(post => post.url).then(memes => {
+    var selfPostRegExp = new RegExp(".*www.reddit.com/r/.*");
+    for (i = 0; i < memes.length; i++) {
+      if (selfPostRegExp.test(memes[i])) {
+        continue;
+      } else {
+        return callback(memes[i]);
+      }
+    }
+  });
+}
 
-exports.processImage = processImage;
+
 exports.respond = respond;

@@ -9,7 +9,8 @@
   "dependencies": {
     "director": "",
     "groupme": "^0.5.7",
-    "request": "^2.79.0"
+    "request": "^2.79.0",
+    "snoowrap": "^1.12.0"
   },
   "engines": {
     "node": "0.10.x"
