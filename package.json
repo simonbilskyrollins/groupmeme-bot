@@ -13,7 +13,8 @@
     "snoowrap": "^1.12.0"
   },
   "engines": {
-    "node": "7.4.0"
+    "node": "7.4.0",
+    "npm": "4.0.5"
   },
   "repository": {
     "type": "git",
