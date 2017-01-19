@@ -37,6 +37,7 @@ function respond() {
         if (err) {
           return;
         } else {
+          console.log('attaching ' + processedImageUrl);
           postMessage(botResponse, messageType, processedImageUrl);
         }
       })
