@@ -1,5 +1,7 @@
 # Sample GroupMe NodeJS Callback Bot
 
+[![Build Status](https://travis-ci.org/simonbilskyrollins/groupmeme-bot.svg?branch=master)](https://travis-ci.org/simonbilskyrollins/groupmeme-bot)
+
 ## Introduction
 
 This project shows the capability of a bot to react to messages sent within a group.
