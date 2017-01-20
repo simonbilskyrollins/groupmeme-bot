@@ -1,11 +1,13 @@
 var HTTPS = require('https'),
     request = require('request'),
     fs = require('fs'),
-    ImageService = require('groupme').ImageService,
-    snoowrap = require('snoowrap');
+    ImageService = require('groupme').ImageService, // GroupMe image service wrapper
+    snoowrap = require('snoowrap');  // Reddit API wrapper
 
+// Get GroupMe bot ID
 var botID = process.env.BOT_ID;
 
+// Get Reddit API config
 const r = new snoowrap({
   userAgent: process.env.USER_AGENT,
   clientId: process.env.CLIENT_ID,
@@ -13,16 +15,20 @@ const r = new snoowrap({
   refreshToken: process.env.REFRESH_TOKEN
 });
 
+// Called when a new message is sent to the group chat
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
+  	  // RegExp definitions
       warriorsRegExp = new RegExp(".*\\bwarriors\\b.*", "i"),
       sickRegExp = new RegExp(".*\\bsick\\b.*", "i"),
       wholesomeMemeRegExp = new RegExp(".*\\bmeme\\b.*", "i");
 
-  var botResponse, messageType, imageUrl;
+  var botResponse, imageUrl;
 
+  // Return a normal 200 status code
   this.res.writeHead(200);
 
+  // Matching logic
   if (request.text && warriorsRegExp.test(request.text)) {
     botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
     postMessage(botResponse);
@@ -42,6 +48,7 @@ function respond() {
       })
     });
   } else {
+  	// Message doesn't match any of the patterns we're interested in
     console.log("don't care: ", request.text);
   }
   this.res.end();
@@ -56,6 +63,7 @@ function postMessage(botResponse, imageUrl) {
     method: 'POST'
   };
 
+  // Slightly different structure if we want to send an image
   if (imageUrl) {
     body = {
       "bot_id" : botID,
@@ -73,10 +81,10 @@ function postMessage(botResponse, imageUrl) {
       "text" : botResponse
     };
   }
-  console.log(body);
 
   console.log('sending ' + botResponse + ' to ' + botID);
 
+  // actually post the message
   botReq = HTTPS.request(options, function(res) {
       if(res.statusCode == 202) {
         //neat
@@ -94,6 +102,8 @@ function postMessage(botResponse, imageUrl) {
   botReq.end(JSON.stringify(body));
 }
 
+// If we want to send an image, we first have to upload it to GroupMe's image
+// processing service
 function processImage(imageUrl, callback) {
   var imageStream = fs.createWriteStream('tmp-image');
   request(imageUrl).pipe(imageStream);
@@ -112,8 +122,10 @@ function processImage(imageUrl, callback) {
   });
 }
 
+// Get top link from given subreddit
 function getMeme(subreddit, callback) {
   r.getSubreddit(subreddit).getHot().map(post => post.url).then(memes => {
+  	// Ignore self posts
     var selfPostRegExp = new RegExp(".*www.reddit.com/r/.*");
     for (i = 0; i < memes.length; i++) {
       if (selfPostRegExp.test(memes[i])) {
