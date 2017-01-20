@@ -1,7 +1,7 @@
 {
-  "name": "Cool guy bot",
-  "description": "Basic Groupme Bot written in Node",
-  "repository": "https://github.com/petemcgrath/cool-guy-bot",
-  "logo": "http://www.tailgate365.com/wp-content/uploads/2011/06/tom-hanks-906.jpg",
+  "name": "GroupMeme Bot",
+  "description": "The GroupMe Bot with the dankest memes",
+  "repository": "https://github.com/simonbilskyrollins/groupmeme-bot",
+  "logo": "http://pre12.deviantart.net/c3b4/th/pre/f/2012/214/7/c/futurama__bender_by_suzura-d59kq1p.png",
   "keywords": []
 }
