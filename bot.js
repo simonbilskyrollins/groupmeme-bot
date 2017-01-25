@@ -38,14 +38,19 @@ function respond() {
   } else if (request.text && wholesomeMemeRegExp.test(request.text)) {
     botResponse = "I hope this brightens your day";
     getMeme('wholesomememes', function(imageUrl) {
-      processImage(imageUrl, function(err, processedImageUrl) {
-        if (err) {
-          return;
-        } else {
-          console.log('attaching ' + processedImageUrl);
-          postMessage(botResponse, processedImageUrl);
-        }
-      })
+      if (imageUrl) {
+        processImage(imageUrl, function(err, processedImageUrl) {
+          if (err) {
+            return;
+          } else {
+            console.log('attaching ' + processedImageUrl);
+            postMessage(botResponse, processedImageUrl);
+          }
+        })
+      } else {
+        botResponse = "Sorry, something went wrong and I'm fresh out of memes"
+        postMessage(botResponse);
+      }
     });
   } else {
     // Message doesn't match any of the patterns we're interested in
@@ -114,7 +119,6 @@ function processImage(imageUrl, callback) {
           function(err,ret) {
             if (err) {
               console.log('error posting image ', imageUrl, 'to GroupMe');
-              //console.log(err);
               return callback(err, null);
             } else {
               return callback(null, ret.url);
@@ -125,17 +129,21 @@ function processImage(imageUrl, callback) {
 
 // Get top link from given subreddit
 function getMeme(subreddit, callback) {
-  r.getSubreddit(subreddit).getHot({limit: 20}).filter(post => post.is_self==false && post.stickied==false && post.likes==false).map(function(post) {
-    console.log(post);
-    return post;
-  }).then(memes => {
-    for (i = 0; i < memes.length; i++) {
-      memes[i].upvote();
-      return callback(memes[i].url);
+  r.getSubreddit(subreddit).getHot({limit: 20}).filter(post => {
+    if (post.is_self==false && post.stickied==false && post.likes==null) {
+      return post;
+  }}).then(post => {
+    if (post.length > 0) {
+      meme = post[0]
+      r.getSubmission(meme.id).upvote();
+      console.log("retrieved meme ", meme.url);
+      return callback(meme.url);
+    } else {
+      console.log('ran out of /r/wholesomememes posts');
+      return callback();
     }
   });
 }
 
-getMeme('wholesomememes');
 
 exports.respond = respond;
