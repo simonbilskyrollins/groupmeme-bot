@@ -18,7 +18,7 @@ const r = new snoowrap({
 // Called when a new message is sent to the group chat
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
-  	  // RegExp definitions
+      // RegExp definitions
       warriorsRegExp = new RegExp(".*\\bwarriors\\b.*", "i"),
       sickRegExp = new RegExp(".*\\bsick\\b.*", "i"),
       wholesomeMemeRegExp = new RegExp(".*\\bmeme\\b.*", "i");
@@ -38,17 +38,22 @@ function respond() {
   } else if (request.text && wholesomeMemeRegExp.test(request.text)) {
     botResponse = "I hope this brightens your day";
     getMeme('wholesomememes', function(imageUrl) {
-      processImage(imageUrl, function(err, processedImageUrl) {
-        if (err) {
-          return;
-        } else {
-          console.log('attaching ' + processedImageUrl);
-          postMessage(botResponse, processedImageUrl);
-        }
-      })
+      if (imageUrl) {
+        processImage(imageUrl, function(err, processedImageUrl) {
+          if (err) {
+            return;
+          } else {
+            console.log('attaching ' + processedImageUrl);
+            postMessage(botResponse, processedImageUrl);
+          }
+        })
+      } else {
+        botResponse = "Sorry, something went wrong and I'm fresh out of memes"
+        postMessage(botResponse);
+      }
     });
   } else {
-  	// Message doesn't match any of the patterns we're interested in
+    // Message doesn't match any of the patterns we're interested in
     console.log("don't care: ", request.text);
   }
   this.res.end();
@@ -113,7 +118,7 @@ function processImage(imageUrl, callback) {
       'tmp-image',
           function(err,ret) {
             if (err) {
-              console.log('error posting image to GroupMe')
+              console.log('error posting image ', imageUrl, 'to GroupMe');
               return callback(err, null);
             } else {
               return callback(null, ret.url);
@@ -124,15 +129,18 @@ function processImage(imageUrl, callback) {
 
 // Get top link from given subreddit
 function getMeme(subreddit, callback) {
-  r.getSubreddit(subreddit).getHot().map(post => post.url).then(memes => {
-  	// Ignore self posts
-    var selfPostRegExp = new RegExp(".*www.reddit.com/r/.*");
-    for (i = 0; i < memes.length; i++) {
-      if (selfPostRegExp.test(memes[i])) {
-        continue;
-      } else {
-        return callback(memes[i]);
-      }
+  r.getSubreddit(subreddit).getHot({limit: 20}).filter(post => {
+    if (post.is_self==false && post.stickied==false && post.likes==null) {
+      return post;
+  }}).then(post => {
+    if (post.length > 0) {
+      meme = post[0]
+      r.getSubmission(meme.id).upvote();
+      console.log("retrieved meme ", meme.url);
+      return callback(meme.url);
+    } else {
+      console.log('ran out of /r/wholesomememes posts');
+      return callback();
     }
   });
 }
