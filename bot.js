@@ -18,7 +18,7 @@ const r = new snoowrap({
 // Called when a new message is sent to the group chat
 function respond() {
   var request = JSON.parse(this.req.chunks[0]),
-  	  // RegExp definitions
+      // RegExp definitions
       warriorsRegExp = new RegExp(".*\\bwarriors\\b.*", "i"),
       sickRegExp = new RegExp(".*\\bsick\\b.*", "i"),
       wholesomeMemeRegExp = new RegExp(".*\\bmeme\\b.*", "i");
@@ -48,7 +48,7 @@ function respond() {
       })
     });
   } else {
-  	// Message doesn't match any of the patterns we're interested in
+    // Message doesn't match any of the patterns we're interested in
     console.log("don't care: ", request.text);
   }
   this.res.end();
@@ -113,7 +113,8 @@ function processImage(imageUrl, callback) {
       'tmp-image',
           function(err,ret) {
             if (err) {
-              console.log('error posting image to GroupMe')
+              console.log('error posting image ', imageUrl, 'to GroupMe');
+              //console.log(err);
               return callback(err, null);
             } else {
               return callback(null, ret.url);
@@ -124,18 +125,17 @@ function processImage(imageUrl, callback) {
 
 // Get top link from given subreddit
 function getMeme(subreddit, callback) {
-  r.getSubreddit(subreddit).getHot().map(post => post.url).then(memes => {
-  	// Ignore self posts
-    var selfPostRegExp = new RegExp(".*www.reddit.com/r/.*");
+  r.getSubreddit(subreddit).getHot({limit: 20}).filter(post => post.is_self==false && post.stickied==false && post.likes==false).map(function(post) {
+    console.log(post);
+    return post;
+  }).then(memes => {
     for (i = 0; i < memes.length; i++) {
-      if (selfPostRegExp.test(memes[i])) {
-        continue;
-      } else {
-        return callback(memes[i]);
-      }
+      memes[i].upvote();
+      return callback(memes[i].url);
     }
   });
 }
 
+getMeme('wholesomememes');
 
 exports.respond = respond;
