@@ -29,13 +29,13 @@ function respond() {
   this.res.writeHead(200);
 
   // Matching logic
-  if (request.text && warriorsRegExp.test(request.text)) {
+  if (request.text && warriorsRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
     botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
     postMessage(botResponse);
-  } else if (request.text && sickRegExp.test(request.text)) {
+  } else if (request.text && sickRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
     botResponse = "Too bad your immune system isn't as good as Steph's :("
     postMessage(botResponse);
-  } else if (request.text && wholesomeMemeRegExp.test(request.text)) {
+  } else if (request.text && wholesomeMemeRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
     botResponse = "I hope this brightens your day";
     getMeme('wholesomememes', function(imageUrl) {
       if (imageUrl) {
