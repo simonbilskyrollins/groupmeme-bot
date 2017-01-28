@@ -21,7 +21,8 @@ function respond() {
       // RegExp definitions
       warriorsRegExp = new RegExp(".*\\bwarriors\\b.*", "i"),
       sickRegExp = new RegExp(".*\\bsick\\b.*", "i"),
-      wholesomeMemeRegExp = new RegExp(".*\\bmeme\\b.*", "i");
+      wholesomeMemeRegExp = new RegExp(".*\\bmeme.*", "i"),
+      xkcdRegExp = new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i");
 
   var botResponse, imageUrl;
 
@@ -33,24 +34,20 @@ function respond() {
     botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
     postMessage(botResponse);
   } else if (request.text && sickRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
-    botResponse = "Too bad your immune system isn't as good as Steph's :("
+    botResponse = "Too bad your immune system isn't as good as Steph's :(";
     postMessage(botResponse);
+  } else if (request.text && xkcdRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
+    botResponse = "";
+    getXkcd('', function(imageUrl, latestNum) {
+      var randomNum = Math.ceil(Math.random() * latestNum);
+      getXkcd(randomNum.toString(), function(imageUrl, num) {
+        postImageMessage(botResponse, imageUrl);
+      });
+    });
   } else if (request.text && wholesomeMemeRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
     botResponse = "I hope this brightens your day";
     getMeme('wholesomememes', function(imageUrl) {
-      if (imageUrl) {
-        processImage(imageUrl, function(err, processedImageUrl) {
-          if (err) {
-            return;
-          } else {
-            console.log('attaching ' + processedImageUrl);
-            postMessage(botResponse, processedImageUrl);
-          }
-        })
-      } else {
-        botResponse = "Sorry, something went wrong and I'm fresh out of memes"
-        postMessage(botResponse);
-      }
+      postImageMessage(botResponse, imageUrl);
     });
   } else {
     // Message doesn't match any of the patterns we're interested in
@@ -107,6 +104,23 @@ function postMessage(botResponse, imageUrl) {
   botReq.end(JSON.stringify(body));
 }
 
+// postMessage wrapper that takes care of annoying image-posting details
+function postImageMessage(botResponse, imageUrl) {
+  if (imageUrl) {
+    processImage(imageUrl, function(err, processedImageUrl) {
+      if (err) {
+        return;
+      } else {
+        console.log('attaching ' + processedImageUrl);
+        postMessage(botResponse, processedImageUrl);
+      }
+    })
+  } else {
+    botResponse = "Sorry, something went wrong and I'm fresh out of memes"
+    postMessage(botResponse);
+  }
+}
+
 // If we want to send an image, we first have to upload it to GroupMe's image
 // processing service
 function processImage(imageUrl, callback) {
@@ -119,9 +133,9 @@ function processImage(imageUrl, callback) {
           function(err,ret) {
             if (err) {
               console.log('error posting image ', imageUrl, 'to GroupMe');
-              return callback(err, null);
+              callback(err, null);
             } else {
-              return callback(null, ret.url);
+              callback(null, ret.url);
             }
           });
   });
@@ -136,11 +150,33 @@ function getMeme(subreddit, callback) {
     if (post.length > 0) {
       meme = post[0]
       r.getSubmission(meme.id).upvote();
-      console.log("retrieved meme ", meme.url);
-      return callback(meme.url);
+      console.log('retrieved meme ', meme.url);
+      callback(meme.url);
     } else {
       console.log('ran out of /r/wholesomememes posts');
-      return callback();
+      callback();
+    }
+  });
+}
+
+// Get an xkcd comic
+function getXkcd(number, callback) {
+  var BASE_URL = 'https://xkcd.com/';
+  if (number) {
+    url = BASE_URL + number + '/info.0.json';
+  } else {
+    url = BASE_URL + 'info.0.json';
+  }
+  var options = {
+    url: url,
+    json: true
+  };
+  request(options, function(err, res, body) {
+    if (res.statusCode == 200) {
+      console.log('retrieved XKCD comic', body.num, body.img);
+      callback(body.img, body.num);
+    } else {
+      console.log('error retrieveing XKCD comic');
     }
   });
 }
