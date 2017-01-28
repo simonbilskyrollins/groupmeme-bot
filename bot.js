@@ -1,5 +1,4 @@
-var HTTP = require('http'),
-    HTTPS = require('https'),
+var HTTPS = require('https'),
     request = require('request'),
     fs = require('fs'),
     ImageService = require('groupme').ImageService, // GroupMe image service wrapper
