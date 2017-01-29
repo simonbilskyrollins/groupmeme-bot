@@ -2,6 +2,7 @@ var http, director, cool, bot, router, server, port;
 
 http        = require('http');
 director    = require('director');
+fs          = require('fs');
 bot         = require('./bot.js');
 
 router = new director.http.Router({
@@ -27,6 +28,16 @@ port = Number(process.env.PORT || 5000);
 server.listen(port);
 
 function ping() {
-  this.res.writeHead(200);
-  this.res.end("This is just a GroupMe bot. Nothing to see here.");
+  var res = this.res;
+  fs.readFile('index.html', function(err, data) {
+    if (err) {
+      console.log(err);
+      res.writeHead(404, {"Content-Type": "text/html"});
+    }
+    else {
+      res.writeHead(200, {"Content-Type": "text/html"});
+      res.write(data);
+    }
+    res.end();
+  });
 }

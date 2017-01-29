@@ -183,3 +183,4 @@ function getXkcd(number, callback) {
 
 
 exports.respond = respond;
+exports.postMessage = postMessage;
