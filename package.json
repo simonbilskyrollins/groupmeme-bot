@@ -7,7 +7,8 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "director": "",
+    "body-parser": "^1.16.0",
+    "express": "^4.14.1",
     "groupme": "^0.5.7",
     "request": "^2.79.0",
     "snoowrap": "^1.12.0"

@@ -8,18 +8,22 @@ var HTTPS = require('https'),
 var botID = process.env.BOT_ID;
 
 // Get Reddit API config
-const r = new snoowrap({
-  userAgent: process.env.USER_AGENT,
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  refreshToken: process.env.REFRESH_TOKEN
-});
+try {
+  const r = new snoowrap({
+    userAgent: process.env.USER_AGENT,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    refreshToken: process.env.REFRESH_TOKEN
+  });
+} catch(err) {
+  console.log("problem with Reddit API config");
+}
 
 
 // Array for regular expressions -> responses
 function getActionArr(){
   return [ 
-    //Fun warriors facts
+    // fun warriors facts
     {
       regex : new RegExp(".*\\bwarriors\\b.*", "i"),
       action : function() {
@@ -28,7 +32,7 @@ function getActionArr(){
       }
     },
 
-    //talk about illnesses
+    // talk about illnesses
     {
       regex: new RegExp(".*\\bsick\\b.*", "i"),
       action : function() {
@@ -37,7 +41,7 @@ function getActionArr(){
       }
     },
 
-    //find wholesome memes
+    // find wholesome memes
     {
       regex : new RegExp(".*\\bmeme\\b.*", "i"),
       action : function() {
@@ -48,7 +52,7 @@ function getActionArr(){
       }
     },
 
-    //pull xkcd comics
+    // pull xkcd comics
     {
       regex: new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i"),
       action: function() {
@@ -65,13 +69,13 @@ function getActionArr(){
 }
 
 // Called when a new message is sent to the group chat
-function respond() {
-
-  var request = JSON.parse(this.req.chunks[0])
+function respond(req, res) {
+  console.log(req);
+  var request = JSON.parse(req.body);
   var botResponse, imageUrl;
 
   // Return a normal 200 status code
-  this.res.writeHead(200);
+  res.writeHead(200);
 
   // Matching logic
   var matched = false;
@@ -81,12 +85,12 @@ function respond() {
       actionResponse['action']) || matched;
   });
 
-  //log stuff we ignored
+  // log stuff we ignored
   if (!matched){
     console.log("don't care: ", request.text);
   }
   
-  this.res.end();
+  res.end();
 }
 
 function postMessage(botResponse, imageUrl) {
@@ -122,7 +126,7 @@ function postMessage(botResponse, imageUrl) {
   // actually post the message
   botReq = HTTPS.request(options, function(res) {
       if(res.statusCode == 202) {
-        //neat
+        // neat
       } else {
         console.log('rejecting bad status code ' + res.statusCode);
       }
