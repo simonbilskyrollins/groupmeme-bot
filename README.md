@@ -24,14 +24,13 @@ Now you can put the appropriate values in your `.env` file and also create new e
 
 ## Start the server
 
-To test locally, open terminal and run the following command to start a local server.
+To test locally, you will first need to download and install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli). Then, open terminal and run the following command to start a local server.
 
-    $ foreman start
+    $ heroku local
 
-Then navigate to `http://127.0.0.1:5000/` in a browser. Note: you may need to install the [Heroku Toolbelt](https://devcenter.heroku.com/articles/heroku-cli) for the `foreman` command to work.
+Then navigate to `http://127.0.0.1:5000/` in a browser.
 
 To simulate a message being sent to the group, make a new `message.json` file with the following contents:
-
 
     {
       "name": "Test Sender",
