@@ -58,14 +58,28 @@ function getActionArr(){
           }
         });
       }
+    },
+
+    //pull xkcd comics
+    {
+      regex: new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i"),
+      action: function() {
+        botResponse = "";
+        getXkcd('', function(imageUrl, latestNum) {
+          var randomNum = Math.ceil(Math.random() * latestNum);
+          getXkcd(randomNum.toString(), function(imageUrl, num) {
+            postImageMessage(botResponse, imageUrl);
+          });
+        });
+      }
     }
   ];
 }
 
 // Called when a new message is sent to the group chat
 function respond() {
-  var request = JSON.parse(this.req.chunks[0])
 
+  var request = JSON.parse(this.req.chunks[0])
   var botResponse, imageUrl;
 
   // Return a normal 200 status code
@@ -135,6 +149,22 @@ function postMessage(botResponse, imageUrl) {
   botReq.end(JSON.stringify(body));
 }
 
+// postMessage wrapper that takes care of annoying image-posting details
+function postImageMessage(botResponse, imageUrl) {
+  if (imageUrl) {
+    processImage(imageUrl, function(err, processedImageUrl) {
+      if (err) {
+        return;
+      } else {
+        console.log('attaching ' + processedImageUrl);
+        postMessage(botResponse, processedImageUrl);
+      }
+    })
+  } else {
+    botResponse = "Sorry, something went wrong and I'm fresh out of memes"
+    postMessage(botResponse);
+  }
+}
 
 // If we want to send an image, we first have to upload it to GroupMe's image
 // processing service
@@ -148,9 +178,9 @@ function processImage(imageUrl, callback) {
           function(err,ret) {
             if (err) {
               console.log('error posting image ', imageUrl, 'to GroupMe');
-              return callback(err, null);
+              callback(err, null);
             } else {
-              return callback(null, ret.url);
+              callback(null, ret.url);
             }
           });
   });
@@ -165,11 +195,33 @@ function getMeme(subreddit, callback) {
     if (post.length > 0) {
       meme = post[0]
       r.getSubmission(meme.id).upvote();
-      console.log("retrieved meme ", meme.url);
-      return callback(meme.url);
+      console.log('retrieved meme ', meme.url);
+      callback(meme.url);
     } else {
       console.log('ran out of /r/wholesomememes posts');
-      return callback();
+      callback();
+    }
+  });
+}
+
+// Get an xkcd comic
+function getXkcd(number, callback) {
+  var BASE_URL = 'https://xkcd.com/';
+  if (number) {
+    url = BASE_URL + number + '/info.0.json';
+  } else {
+    url = BASE_URL + 'info.0.json';
+  }
+  var options = {
+    url: url,
+    json: true
+  };
+  request(options, function(err, res, body) {
+    if (res.statusCode == 200) {
+      console.log('retrieved XKCD comic', body.num, body.img);
+      callback(body.img, body.num);
+    } else {
+      console.log('error retrieveing XKCD comic');
     }
   });
 }
