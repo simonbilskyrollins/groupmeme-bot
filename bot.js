@@ -43,19 +43,7 @@ function getActionArr(){
       action : function() {
         botResponse = "I hope this brightens your day";
         getMeme('wholesomememes', function(imageUrl) {
-          if (imageUrl) {
-            processImage(imageUrl, function(err, processedImageUrl) {
-              if (err) {
-                return;
-              } else {
-                console.log('attaching ' + processedImageUrl);
-                postMessage(botResponse, processedImageUrl);
-              }
-            })
-          } else {
-            botResponse = "Sorry, something went wrong and I'm fresh out of memes"
-            postMessage(botResponse);
-          }
+          postImageMessage(botResponse, imageUrl);
         });
       }
     },
