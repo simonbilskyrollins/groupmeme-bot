@@ -15,44 +15,77 @@ const r = new snoowrap({
   refreshToken: process.env.REFRESH_TOKEN
 });
 
+
+// Array for regular expressions -> responses
+function getActionArr(){
+  return [ 
+    //Fun warriors facts
+    {
+      regex : new RegExp(".*\\bwarriors\\b.*", "i"),
+      action : function() {
+        botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
+        postMessage(botResponse);
+      }
+    },
+
+    //talk about illnesses
+    {
+      regex: new RegExp(".*\\bsick\\b.*", "i"),
+      action : function() {
+        botResponse = "Too bad your immune system isn't as good as Steph's :(";
+        postMessage(botResponse);
+      }
+    },
+
+    //find wholesome memes
+    {
+      regex : new RegExp(".*\\bmeme\\b.*", "i"),
+      action : function() {
+        botResponse = "I hope this brightens your day";
+        getMeme('wholesomememes', function(imageUrl) {
+          postImageMessage(botResponse, imageUrl);
+        });
+      }
+    },
+
+    //pull xkcd comics
+    {
+      regex: new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i"),
+      action: function() {
+        botResponse = "";
+        getXkcd('', function(imageUrl, latestNum) {
+          var randomNum = Math.ceil(Math.random() * latestNum);
+          getXkcd(randomNum.toString(), function(imageUrl, num) {
+            postImageMessage(botResponse, imageUrl);
+          });
+        });
+      }
+    }
+  ];
+}
+
 // Called when a new message is sent to the group chat
 function respond() {
-  var request = JSON.parse(this.req.chunks[0]),
-      // RegExp definitions
-      warriorsRegExp = new RegExp(".*\\bwarriors\\b.*", "i"),
-      sickRegExp = new RegExp(".*\\bsick\\b.*", "i"),
-      wholesomeMemeRegExp = new RegExp(".*\\bmeme.*", "i"),
-      xkcdRegExp = new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i");
 
+  var request = JSON.parse(this.req.chunks[0])
   var botResponse, imageUrl;
 
   // Return a normal 200 status code
   this.res.writeHead(200);
 
   // Matching logic
-  if (request.text && warriorsRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
-    botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
-    postMessage(botResponse);
-  } else if (request.text && sickRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
-    botResponse = "Too bad your immune system isn't as good as Steph's :(";
-    postMessage(botResponse);
-  } else if (request.text && xkcdRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
-    botResponse = "";
-    getXkcd('', function(imageUrl, latestNum) {
-      var randomNum = Math.ceil(Math.random() * latestNum);
-      getXkcd(randomNum.toString(), function(imageUrl, num) {
-        postImageMessage(botResponse, imageUrl);
-      });
-    });
-  } else if (request.text && wholesomeMemeRegExp.test(request.text) && request.name && request.name !== "Beep Boop") {
-    botResponse = "I hope this brightens your day";
-    getMeme('wholesomememes', function(imageUrl) {
-      postImageMessage(botResponse, imageUrl);
-    });
-  } else {
-    // Message doesn't match any of the patterns we're interested in
+  var matched = false;
+  getActionArr().forEach(function(actionResponse){
+    matched = performActionIfAppropriate(request, 
+      request.text && request.text.match(actionResponse.regex), 
+      actionResponse['action']) || matched;
+  });
+
+  //log stuff we ignored
+  if (!matched){
     console.log("don't care: ", request.text);
   }
+  
   this.res.end();
 }
 
@@ -181,6 +214,16 @@ function getXkcd(number, callback) {
   });
 }
 
+/**
+ * Helper method for detecting bot-response-worthy messages
+ */
+ function performActionIfAppropriate(request, isMatch, action){
+  if(isMatch && request.name && request.name !== "Beep Boop"){
+    action();
+    return true;
+  }
+  return false;
+ }
 
 exports.respond = respond;
 exports.postMessage = postMessage;
