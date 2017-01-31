@@ -41,6 +41,15 @@ function getActionArr(){
       }
     },
 
+    // Did I hear something about the patriarchy?
+    {
+      regex: new RegExp(".*\\bpatriarch.*", "i"),
+      action: function() {
+        botResponse = "Fuck the patriarchy!";
+        postMessage(botResponse);
+      }
+    }
+
     // find wholesome memes
     {
       regex : new RegExp(".*\\bmeme.*", "i"),
