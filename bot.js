@@ -34,16 +34,25 @@ function getActionArr(){
 
     // talk about illnesses
     {
-      regex: new RegExp(".*\\bsick\\b.*", "i"),
+      regex: new RegExp(".*\\bsick.*", "i"),
       action : function() {
         botResponse = "Too bad your immune system isn't as good as Steph's :(";
         postMessage(botResponse);
       }
     },
 
+    // Did I hear something about the patriarchy?
+    {
+      regex: new RegExp(".*\\bpatriarch.*", "i"),
+      action: function() {
+        botResponse = "Fuck the patriarchy!";
+        postMessage(botResponse);
+      }
+    }
+
     // find wholesome memes
     {
-      regex : new RegExp(".*\\bmeme\\b.*", "i"),
+      regex : new RegExp(".*\\bmeme.*", "i"),
       action : function() {
         botResponse = "I hope this brightens your day";
         getMeme('wholesomememes', function(imageUrl) {
@@ -230,3 +239,4 @@ function getXkcd(number, callback) {
 
 exports.respond = respond;
 exports.postMessage = postMessage;
+exports.postImageMessage = postImageMessage;
