@@ -37,7 +37,7 @@ To simulate a message being sent to the group, make a new `message.json` file wi
       "text": "I would like a meme"
     }
 
-Then post the message to the server by running `curl -X POST -d @message.json http://localhost:5000`.
+Then post the message to the server by running `curl -v -H "Accept: application/json" -H "Content-Type: application/json" -d @message.json http://localhost:5000`.
 
 # Contributing
 
