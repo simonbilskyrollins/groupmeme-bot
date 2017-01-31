@@ -22,7 +22,7 @@ function getActionArr(){
     //Fun warriors facts
     {
       regex : new RegExp(".*\\bwarriors\\b.*", "i"),
-      action : function() {
+      action : function(inputString) {
         botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
         postMessage(botResponse);
       }
@@ -31,7 +31,7 @@ function getActionArr(){
     //talk about illnesses
     {
       regex: new RegExp(".*\\bsick\\b.*", "i"),
-      action : function() {
+      action : function(inputString) {
         botResponse = "Too bad your immune system isn't as good as Steph's :(";
         postMessage(botResponse);
       }
@@ -40,7 +40,7 @@ function getActionArr(){
     //find wholesome memes
     {
       regex : new RegExp(".*\\bmeme\\b.*", "i"),
-      action : function() {
+      action : function(inputString) {
         botResponse = "I hope this brightens your day";
         getMeme('wholesomememes', function(imageUrl) {
           postImageMessage(botResponse, imageUrl);
@@ -51,7 +51,7 @@ function getActionArr(){
     //pull xkcd comics
     {
       regex: new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i"),
-      action: function() {
+      action: function(inputString) {
         botResponse = "";
         getXkcd('', function(imageUrl, latestNum) {
           var randomNum = Math.ceil(Math.random() * latestNum);
@@ -59,6 +59,18 @@ function getActionArr(){
             postImageMessage(botResponse, imageUrl);
           });
         });
+      }
+    },
+
+    //You can call me "Al"
+    {
+      regex: new RegExp(".*\\bcall\\s*\\bme\\b\\s\"(.*)\".*", "i"),
+      action : function(inputString){
+        //fix this:
+        hackyRegex = new RegExp(".*\\bcall\\s*\\bme\\b\\s\"(.*)\".*", "i");
+        botResponse = "Sure thing, " + inputString.match(hackyRegex)[1];
+
+        postMessage(botResponse);
       }
     }
   ];
@@ -78,7 +90,8 @@ function respond() {
   getActionArr().forEach(function(actionResponse){
     matched = performActionIfAppropriate(request, 
       request.text && request.text.match(actionResponse.regex), 
-      actionResponse['action']) || matched;
+      actionResponse.action)
+      || matched;
   });
 
   //log stuff we ignored
@@ -219,7 +232,7 @@ function getXkcd(number, callback) {
  */
  function performActionIfAppropriate(request, isMatch, action){
   if(isMatch && request.name && request.name !== "Beep Boop"){
-    action();
+    action(request.text);
     return true;
   }
   return false;
