@@ -7,36 +7,14 @@ fs          = require('fs');
 bot         = require('./bot.js');
 
 app = express();
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-// router = new director.http.Router({
-//   '/' : {
-//     post: bot.respond,
-//     get: ping
-//   },
-//   '/send' : {
-//     post: postUserMessage,
-//     get: ping
-//   }
-// });
-
-// server = http.createServer(function (req, res) {
-//   req.chunks = [];
-//   req.on('data', function (chunk) {
-//     req.chunks.push(chunk.toString());
-//   });
-
-//   router.dispatch(req, res, function(err) {
-//     res.writeHead(err.status, {"Content-Type": "text/plain"});
-//     res.end(err.message);
-//   });
-// });
-
+// Run server on port specified in .env or default to port 5000
 port = Number(process.env.PORT || 5000);
-//server.listen(port);
 
+// Display index.html for GET requests sent to /
 app.get('/', function (req, res) {
-  //var res = this.res;
   fs.readFile('index.html', function(err, data) {
     if (err) {
       console.log(err);
@@ -50,31 +28,20 @@ app.get('/', function (req, res) {
   });
 });
 
+// Pass message data POSTed to / to respond() in bot.js
 app.post('/', function (req, res) {
-  req.chunks = [];
-  req.on('data', function (chunk) {
-    req.chunks.push(chunk.toString());
-  });
   bot.respond(req, res);
 });
 
+// Handle form data POSTed to /send
 app.post('/send', function (req, res) {
-  console.log(req.body.message);
-  res.send('Yay');
-  // form.parse(req, function(err, fields) {
-  //   console.log('parse');
-  //   if (err) {
-  //     console.log(err);
-  //     res.writeHead(500, {"Content-Type": "text/html"});
-  //     res.end();
-  //   } else {
-  //     console.log('sent');
-  //     res.writeHead(200, {"Content-Type": "text/plain"});
-  //     res.write('sent message:\n\n');
-  //     //res.end(util.inspect({fields: fields}));
-  //     res.end();
-  //   }
-  // });
+  var message = req.body.message;
+  console.log('received form input', message);
+  bot.postMessage(message);
+  res.writeHead(200, {"Content-Type": "text/plain"});
+  res.write('sent message:\n\n');
+  res.write(message);
+  res.end();
 });
 
 app.listen(port, function () {

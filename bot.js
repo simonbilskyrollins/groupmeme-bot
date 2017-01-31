@@ -70,8 +70,7 @@ function getActionArr(){
 
 // Called when a new message is sent to the group chat
 function respond(req, res) {
-  console.log(req);
-  var request = JSON.parse(req.body);
+  var request = req.body;
   var botResponse, imageUrl;
 
   // Return a normal 200 status code
