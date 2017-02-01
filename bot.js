@@ -48,7 +48,7 @@ function getActionArr(){
         botResponse = "Fuck the patriarchy!";
         postMessage(botResponse);
       }
-    }
+    },
 
     // find wholesome memes
     {
