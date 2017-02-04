@@ -4,14 +4,18 @@
   "description": "The GroupMe bot with the dankest memes",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "standard"
   },
   "dependencies": {
-    "director": "",
+    "body-parser": "^1.16.0",
+    "express": "^4.14.1",
     "groupme": "^0.5.7",
+    "pug": "^2.0.0-beta10",
     "request": "^2.79.0",
     "snoowrap": "^1.12.0",
-    "pg": "4.x"
+    "pg": "4.x",
+    "standard": "^8.6.0"
   },
   "engines": {
     "node": "7.4.0",

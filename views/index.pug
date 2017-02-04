@@ -1,0 +1,14 @@
+head
+	title GroupMeme Bot
+body
+	h1 GroupMeme Bot
+	p This is just a GroupMe bot. Nothing to see here.
+	div
+		form(action="/send" method="POST")
+			label(for="message") Message:
+			input#message(type="text" name="message" placeholder="Your message here")
+			br
+			label(for="imageUrl") Image URL:
+			input#imageUrl(type="text" name="imageUrl" placeholder="https://imgs.xkcd.com/comics/exploits_of_a_mom.png")
+			br
+			input(type="submit" value="Send")
