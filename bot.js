@@ -3,6 +3,7 @@ var HTTPS = require('https'),
     fs = require('fs'),
     ImageService = require('groupme').ImageService, // GroupMe image service wrapper
     snoowrap = require('snoowrap');  // Reddit API wrapper
+    pg = require('pg');
 
 // Get GroupMe bot ID
 var botID = process.env.BOT_ID;
@@ -22,8 +23,11 @@ function getActionArr(){
     //Fun warriors facts
     {
       regex : new RegExp(".*\\bwarriors\\b.*", "i"),
-      action : function(inputString) {
+      action : function(inputString, nickname, userId) {
         botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
+        if(nickname){
+          botResponse = "Hey " + nickname + ", did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
+        }
         postMessage(botResponse);
       }
     },
@@ -31,8 +35,11 @@ function getActionArr(){
     //talk about illnesses
     {
       regex: new RegExp(".*\\bsick\\b.*", "i"),
-      action : function(inputString) {
+      action : function(inputString, nickname, userId) {
         botResponse = "Too bad your immune system isn't as good as Steph's :(";
+        if(nickname){
+          botResponse = "Too bad your immune system isn't as good as Steph's, " + nickname + " :(";
+        }
         postMessage(botResponse);
       }
     },
@@ -40,8 +47,11 @@ function getActionArr(){
     //find wholesome memes
     {
       regex : new RegExp(".*\\bmeme\\b.*", "i"),
-      action : function(inputString) {
+      action : function(inputString, nickname, userId) {
         botResponse = "I hope this brightens your day";
+        if(nickname) {
+          botResponse = "I hope this brightens your day, " + nickname;
+        }
         getMeme('wholesomememes', function(imageUrl) {
           postImageMessage(botResponse, imageUrl);
         });
@@ -51,8 +61,11 @@ function getActionArr(){
     //pull xkcd comics
     {
       regex: new RegExp(".*\\b(xkcd|nerd|geek|dork|computer science).*", "i"),
-      action: function(inputString) {
+      action: function(inputString, nickname, userId) {
         botResponse = "";
+        if(nickname){
+          botResponse = "Here you go, " + nickname;
+        }
         getXkcd('', function(imageUrl, latestNum) {
           var randomNum = Math.ceil(Math.random() * latestNum);
           getXkcd(randomNum.toString(), function(imageUrl, num) {
@@ -65,11 +78,12 @@ function getActionArr(){
     //You can call me "Al"
     {
       regex: new RegExp(".*\\bcall\\s*\\bme\\b\\s\"(.*)\".*", "i"),
-      action : function(inputString){
-        //fix this:
+      action : function(inputString, nickname, userId){
+        //fix this (there should be a way to get "this.regex"):
         hackyRegex = new RegExp(".*\\bcall\\s*\\bme\\b\\s\"(.*)\".*", "i");
-        botResponse = "Sure thing, " + inputString.match(hackyRegex)[1];
-
+        newNickname = inputString.match(hackyRegex)[1];
+        botResponse = "Sure thing, " + newNickname;
+        addIdNicknameRowToDatabase(userId, newNickname);
         postMessage(botResponse);
       }
     }
@@ -90,7 +104,7 @@ function respond() {
   getActionArr().forEach(function(actionResponse){
     matched = performActionIfAppropriate(request, 
       request.text && request.text.match(actionResponse.regex), 
-      actionResponse.action)
+      actionResponse.action, request.userId)
       || matched;
   });
 
@@ -230,12 +244,100 @@ function getXkcd(number, callback) {
 /**
  * Helper method for detecting bot-response-worthy messages
  */
- function performActionIfAppropriate(request, isMatch, action){
+ function performActionIfAppropriate(request, isMatch, action, submitterId){
   if(isMatch && request.name && request.name !== "Beep Boop"){
-    action(request.text);
+    getNicknameAndFireOffAction(submitterId, action, request.text);
+    // action(request.text, submitterId);
     return true;
   }
   return false;
+ }
+
+/**
+ * Helper methods for interacting with nickname database
+ */
+ function addIdNicknameRowToDatabase(userId, nickname){
+  //this isn't safe. fix before nick kills the db
+  console.log("Building query");
+  var existenceQuery = {
+    text:'SELECT * FROM nicknames WHERE id=$1;',
+    values: [userId]
+  };
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    var entryExists = false;
+    client.query(existenceQuery, function(err, result) {
+      done();
+      if (err)
+        { console.error(err); }
+      else
+        { 
+          entryExists = result.rowCount > 0;
+          console.log("rowCount: " + result.rowCount);
+          console.log("entryExists: " + entryExists);
+          if(entryExists){
+            console.log("update");
+            updateNickname(userId, nickname);
+          } else{
+            console.log("insert");
+            insertNickname(userId, nickname);
+          }
+        }
+    });
+  });
+ }
+
+ function updateNickname(userId, nickname){
+  var updateQuery = {
+    text:'UPDATE nicknames SET nickname = $1 WHERE id = $2;',
+    values: [nickname, userId]
+  };
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query(updateQuery, function(err, result) {
+      done();
+      if(err){
+        console.error(err);
+      } else {
+        console.log("Updated nickname to " + nickname);
+      }
+    });
+  });
+ }
+
+ function insertNickname(userId, nickname){
+  var insertQuery = {
+    text:'INSERT INTO nicknames (id, nickname) VALUES ($1, $2)',
+    values: [userId, nickname]
+  };
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query(insertQuery, function(err, result) {
+      done();
+      if(err){
+        console.error(err);
+      } else {
+        console.log("Inserted " + nickname + " as a nickname");
+      }
+    });
+  });
+ }
+
+ /**
+  * Given a userId, returns either "" or the user's nickname. 
+  */
+ function getNicknameAndFireOffAction(userId, action, text){
+  var getQuery = {
+    text:'SELECT nickname FROM nicknames WHERE id=$1;',
+    values: [userId]
+  };
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query(getQuery, function(err, result) {
+      done();
+      if(err){
+        console.error(err);
+      } else {
+        action(text, result.rows[0].nickname, userId);
+      }
+    });
+  });
  }
 
 exports.respond = respond;
