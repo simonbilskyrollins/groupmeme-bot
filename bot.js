@@ -3,6 +3,7 @@ var request = require('request')
 var fs = require('fs')
 var ImageService = require('groupme').ImageService // GroupMe image service wrapper
 var Snoowrap = require('snoowrap')  // Reddit API wrapper
+var pg = require('pg')
 
 // Get GroupMe bot ID
 var botID = process.env.BOT_ID
@@ -91,7 +92,7 @@ function getActionArr () {
 // Called when a new message is sent to the group chat
 function respond (req, res) {
   var request = req.body
-
+  console.log(request);
   // Return a normal 200 status code
   res.writeHead(200)
 
