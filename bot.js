@@ -20,15 +20,6 @@ function getActionArr () {
   return [
     // fun warriors facts
     {
-      regex: new RegExp('.*\\bwarriors\\b.*', 'i'),
-      action: function () {
-        var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
-        postMessage(botResponse)
-      }
-    },
-
-    // talk about illnesses
-    {
       regex : new RegExp(".*\\bwarriors\\b.*", "i"),
       action : function(inputString, nickname, userId) {
         botResponse = "Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?";
@@ -100,7 +91,7 @@ function getActionArr () {
 // Called when a new message is sent to the group chat
 function respond (req, res) {
   var request = req.body
-  console.log(request);
+
   // Return a normal 200 status code
   res.writeHead(200)
 
@@ -351,6 +342,7 @@ function getXkcd (number, callback) {
     });
   });
  }
+
 exports.respond = respond
 exports.postMessage = postMessage
 exports.postImageMessage = postImageMessage
