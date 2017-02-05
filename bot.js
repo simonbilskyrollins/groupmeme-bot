@@ -65,10 +65,10 @@ function getActionArr () {
         if (nickname) {
           botResponse = 'Here you go, ' + nickname
         }
-        getXkcd('', function (imageUrl, latestNum) {
-          var randomNum = Math.ceil(Math.random() * latestNum)
-          getXkcd(randomNum.toString(), function (imageUrl, num) {
-            postImageMessage(botResponse, imageUrl)
+        getXkcd('', function (xkcd) {
+          var randomNum = Math.ceil(Math.random() * xkcd.num)
+          getXkcd(randomNum.toString(), function (xkcd) {
+            postImageMessage(botResponse, xkcd.img)
           })
         })
       }
@@ -240,7 +240,7 @@ function getXkcd (number, callback) {
       }
       callback(xkcd)
     } else {
-      console.log('error retrieveing XKCD comic:', err)
+      console.log('error retrieveing XKCD comic', url)
     }
   })
 }
