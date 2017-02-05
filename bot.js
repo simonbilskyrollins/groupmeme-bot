@@ -3,6 +3,7 @@ var request = require('request')
 var fs = require('fs')
 var ImageService = require('groupme').ImageService // GroupMe image service wrapper
 var Snoowrap = require('snoowrap')  // Reddit API wrapper
+var pg = require('pg')
 
 // Get GroupMe bot ID
 var botID = process.env.BOT_ID
@@ -21,17 +22,11 @@ function getActionArr () {
     // fun warriors facts
     {
       regex: new RegExp('.*\\bwarriors\\b.*', 'i'),
-      action: function () {
+      action: function (inputString, nickname, userId) {
         var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
-        postMessage(botResponse)
-      }
-    },
-
-    // talk about illnesses
-    {
-      regex: new RegExp('.*\\bsick.*', 'i'),
-      action: function () {
-        var botResponse = "Too bad your immune system isn't as good as Steph's :("
+        if (nickname) {
+          botResponse = 'Hey ' + nickname + ', did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
+        }
         postMessage(botResponse)
       }
     },
@@ -39,17 +34,23 @@ function getActionArr () {
     // Did I hear something about the patriarchy?
     {
       regex: new RegExp('.*\\bpatriarch.*', 'i'),
-      action: function () {
+      action: function (inputString, nickname, userId) {
         var botResponse = 'Fuck the patriarchy!'
+        if (nickname) {
+          botResponse = 'Fuck the patriarchy, ' + nickname + '!'
+        }
         postMessage(botResponse)
       }
     },
 
     // find wholesome memes
     {
-      regex: new RegExp('.*\\bmeme.*', 'i'),
-      action: function () {
+      regex: new RegExp('.*\\bmeme\\b.*', 'i'),
+      action: function (inputString, nickname, userId) {
         var botResponse = 'I hope this brightens your day'
+        if (nickname) {
+          botResponse = 'I hope this brightens your day, ' + nickname
+        }
         getMeme('wholesomememes', function (imageUrl) {
           postImageMessage(botResponse, imageUrl)
         })
@@ -59,14 +60,30 @@ function getActionArr () {
     // pull xkcd comics
     {
       regex: new RegExp('.*\\b(xkcd|nerd|geek|dork|computer science).*', 'i'),
-      action: function () {
-        getXkcd('', function (xkcd) {
-          var randomNum = Math.ceil(Math.random() * xkcd.num)
-          getXkcd(randomNum.toString(), function (xkcd) {
-            var botResponse = 'Title: ' + xkcd.title + '\\nAlt-text: ' + xkcd.alt
-            postImageMessage(botResponse, xkcd.img)
+      action: function (inputString, nickname, userId) {
+        var botResponse = ''
+        if (nickname) {
+          botResponse = 'Here you go, ' + nickname
+        }
+        getXkcd('', function (imageUrl, latestNum) {
+          var randomNum = Math.ceil(Math.random() * latestNum)
+          getXkcd(randomNum.toString(), function (imageUrl, num) {
+            postImageMessage(botResponse, imageUrl)
           })
         })
+      }
+    },
+
+    // You can call me "Al"
+    {
+      regex: new RegExp('.*\\bcall\\s*\\bme\\b\\s"(.*)".*', 'i'),
+      action: function (inputString, nickname, userId) {
+        // fix this (there should be a way to get "this.regex"):
+        var hackyRegex = new RegExp('.*\\bcall\\s*\\bme\\b\\s"(.*)".*', 'i')
+        var newNickname = inputString.match(hackyRegex)[1]
+        var botResponse = 'Sure thing, ' + newNickname
+        addIdNicknameRowToDatabase(userId, newNickname)
+        postMessage(botResponse)
       }
     }
   ]
@@ -75,7 +92,7 @@ function getActionArr () {
 // Called when a new message is sent to the group chat
 function respond (req, res) {
   var request = req.body
-
+  console.log(request)
   // Return a normal 200 status code
   res.writeHead(200)
 
@@ -84,7 +101,7 @@ function respond (req, res) {
   getActionArr().forEach(function (actionResponse) {
     matched = performActionIfAppropriate(request,
       request.text && request.text.match(actionResponse.regex),
-      actionResponse['action']) || matched
+      actionResponse.action, request.userId) || matched
   })
 
   // log stuff we ignored
@@ -231,12 +248,110 @@ function getXkcd (number, callback) {
 /**
  * Helper method for detecting bot-response-worthy messages
  */
-function performActionIfAppropriate (request, isMatch, action) {
+function performActionIfAppropriate (request, isMatch, action, submitterId) {
   if (isMatch && request.name && request.name !== 'Beep Boop') {
-    action()
+    getNicknameAndFireOffAction(submitterId, action, request.text)
+    // action(request.text, submitterId);
     return true
   }
   return false
+}
+
+/**
+ * Helper methods for interacting with nickname database
+ */
+function addIdNicknameRowToDatabase (userId, nickname) {
+  console.log('Building query')
+  var existenceQuery = {
+    text: 'SELECT * FROM nicknames WHERE id=$1;',
+    values: [userId]
+  }
+  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+    if (err) {
+      console.error(err)
+    }
+    var entryExists = false
+    client.query(existenceQuery, function (err, result) {
+      done()
+      if (err) {
+        console.error(err)
+      } else {
+        entryExists = result.rowCount > 0
+        console.log('rowCount: ' + result.rowCount)
+        console.log('entryExists: ' + entryExists)
+        if (entryExists) {
+          console.log('update')
+          updateNickname(userId, nickname)
+        } else {
+          console.log('insert')
+          insertNickname(userId, nickname)
+        }
+      }
+    })
+  })
+}
+
+function updateNickname (userId, nickname) {
+  var updateQuery = {
+    text: 'UPDATE nicknames SET nickname = $1 WHERE id = $2;',
+    values: [nickname, userId]
+  }
+  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+    if (err) {
+      console.error(err)
+    }
+    client.query(updateQuery, function (err, result) {
+      done()
+      if (err) {
+        console.error(err)
+      } else {
+        console.log('Updated nickname to ' + nickname)
+      }
+    })
+  })
+}
+
+function insertNickname (userId, nickname) {
+  var insertQuery = {
+    text: 'INSERT INTO nicknames (id, nickname) VALUES ($1, $2)',
+    values: [userId, nickname]
+  }
+  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+    if (err) {
+      console.error(err)
+    }
+    client.query(insertQuery, function (err, result) {
+      done()
+      if (err) {
+        console.error(err)
+      } else {
+        console.log('Inserted ' + nickname + ' as a nickname')
+      }
+    })
+  })
+}
+
+ /**
+  * Given a userId, returns either "" or the user's nickname.
+  */
+function getNicknameAndFireOffAction (userId, action, text) {
+  var getQuery = {
+    text: 'SELECT nickname FROM nicknames WHERE id=$1;',
+    values: [userId]
+  }
+  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+    if (err) {
+      console.error(err)
+    }
+    client.query(getQuery, function (err, result) {
+      done()
+      if (err) {
+        console.error(err)
+      } else {
+        action(text, result.rows[0].nickname, userId)
+      }
+    })
+  })
 }
 
 exports.respond = respond
