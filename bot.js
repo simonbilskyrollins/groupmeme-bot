@@ -348,7 +348,7 @@ function getNicknameAndFireOffAction (userId, action, text) {
       if (err) {
         console.error(err)
       } else {
-        if (result.rows[0]){
+        if (result.rows[0]) {
           action(text, result.rows[0].nickname, userId)
         } else {
           action(text, null, userId)
