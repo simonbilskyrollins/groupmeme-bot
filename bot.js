@@ -101,7 +101,7 @@ function respond (req, res) {
   getActionArr().forEach(function (actionResponse) {
     matched = performActionIfAppropriate(request,
       request.text && request.text.match(actionResponse.regex),
-      actionResponse.action, request.userId) || matched
+      actionResponse.action, request.user_id) || matched
   })
 
   // log stuff we ignored
@@ -325,7 +325,7 @@ function insertNickname (userId, nickname) {
       if (err) {
         console.error(err)
       } else {
-        console.log('Inserted ' + nickname + ' as a nickname')
+        console.log('Inserted ' + nickname + ' as a nickname with id ' + userId)
       }
     })
   })
