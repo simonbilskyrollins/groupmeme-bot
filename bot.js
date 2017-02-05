@@ -239,8 +239,9 @@ function getXkcd (number, callback) {
         alt: body.alt
       }
       callback(xkcd)
-    } else {
+    } else if (err) {
       console.log('error retrieveing XKCD comic', url)
+      callback()
     }
   })
 }
