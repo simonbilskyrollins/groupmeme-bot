@@ -1,15 +1,15 @@
-var HTTPS = require('https')
-var request = require('request')
-var fs = require('fs')
-var ImageService = require('groupme').ImageService // GroupMe image service wrapper
-var Snoowrap = require('snoowrap')  // Reddit API wrapper
-var pg = require('pg')
+const HTTPS = require('https')
+const request = require('request')
+const fs = require('fs')
+const ImageService = require('groupme').ImageService // GroupMe image service wrapper
+const Snoowrap = require('snoowrap')  // Reddit API wrapper
+const pg = require('pg')
 
 // Get GroupMe bot ID
-var botID = process.env.BOT_ID
+const botID = process.env.BOT_ID
 
 // Get Reddit API config
-var r = new Snoowrap({
+const r = new Snoowrap({
   userAgent: process.env.USER_AGENT || null,
   clientId: process.env.CLIENT_ID || null,
   clientSecret: process.env.CLIENT_SECRET || null,
