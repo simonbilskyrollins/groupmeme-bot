@@ -38,3 +38,6 @@ app.post('/send', function (req, res) {
 app.listen(port, function () {
   console.log('Listening on port', port)
 })
+
+
+module.exports = app

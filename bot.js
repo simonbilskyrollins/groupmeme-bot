@@ -9,12 +9,16 @@ const pg = require('pg')
 const botID = process.env.BOT_ID
 
 // Get Reddit API config
-const r = new Snoowrap({
-  userAgent: process.env.USER_AGENT || null,
-  clientId: process.env.CLIENT_ID || null,
-  clientSecret: process.env.CLIENT_SECRET || null,
-  refreshToken: process.env.REFRESH_TOKEN || null
-})
+try {
+  const r = new Snoowrap({
+    userAgent: process.env.USER_AGENT || null,
+    clientId: process.env.CLIENT_ID || null,
+    clientSecret: process.env.CLIENT_SECRET || null,
+    refreshToken: process.env.REFRESH_TOKEN || null
+  })
+} catch (err) {
+  console.log('Error instantiating Reddit API wrapper')
+}
 
 // Array for regular expressions -> responses
 function getActionArr () {
