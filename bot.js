@@ -21,7 +21,7 @@ function getActionArr () {
   return [
     // fun warriors facts
     {
-      regex: new RegExp('.*\\bwarriors\\b.*', 'i'),
+      regex: /\bwarriors\b/i,
       action: function (inputString, nickname, userId) {
         var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
         if (nickname) {
@@ -33,7 +33,7 @@ function getActionArr () {
 
     // Did I hear something about the patriarchy?
     {
-      regex: new RegExp('.*\\bpatriarch.*', 'i'),
+      regex: /\bpatriarch(s|y|ical)?/i,
       action: function (inputString, nickname, userId) {
         var botResponse = 'Fuck the patriarchy!'
         if (nickname) {
@@ -45,7 +45,7 @@ function getActionArr () {
 
     // find wholesome memes
     {
-      regex: new RegExp('.*\\bmeme\\b.*', 'i'),
+      regex: /\bmemes?\b/i,
       action: function (inputString, nickname, userId) {
         var botResponse = 'I hope this brightens your day'
         if (nickname) {
@@ -59,7 +59,7 @@ function getActionArr () {
 
     // pull xkcd comics
     {
-      regex: new RegExp('.*\\b(xkcd|nerd|geek|dork|computer science).*', 'i'),
+      regex: /\b(xkcd|nerd|geek|dork|computer science)(s|y)?\b/i,
       action: function (inputString, nickname, userId) {
         var botResponse = ''
         if (nickname) {
@@ -76,7 +76,7 @@ function getActionArr () {
 
     // You can call me "Al"
     {
-      regex: new RegExp('.*\\bcall\\s*\\bme\\b\\s"(.*)".*', 'i'),
+      regex: /\bcall\s*\bme\b\s"(.*)"/i,
       action: function (inputString, nickname, userId) {
         // fix this (there should be a way to get "this.regex"):
         var hackyRegex = new RegExp('.*\\bcall\\s*\\bme\\b\\s"(.*)".*', 'i')
