@@ -5,8 +5,7 @@ const should = chai.should()
 
 chai.use(chaiHttp)
 
-
-describe('GroupMeme Bot Tests', function() {
+describe('GroupMeme Bot Tests', function () {
   it('should render a basic form on / GET')
   it('should send a message on a /send POST')
   it('should process incoming messages on / POST')
