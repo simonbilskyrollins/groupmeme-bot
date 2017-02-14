@@ -9,16 +9,12 @@ const pg = require('pg')
 const botID = process.env.BOT_ID
 
 // Get Reddit API config
-try {
-  const r = new Snoowrap({
-    userAgent: process.env.USER_AGENT || null,
-    clientId: process.env.CLIENT_ID || null,
-    clientSecret: process.env.CLIENT_SECRET || null,
-    refreshToken: process.env.REFRESH_TOKEN || null
-  })
-} catch (err) {
-  console.log('Error instantiating Reddit API wrapper')
-}
+const r = new Snoowrap({
+  userAgent: process.env.USER_AGENT || ' ', // userAgent == null throws an error
+  clientId: process.env.CLIENT_ID || null,
+  clientSecret: process.env.CLIENT_SECRET || null,
+  refreshToken: process.env.REFRESH_TOKEN || null
+})
 
 // Array for regular expressions -> responses
 function getActionArr () {
@@ -96,7 +92,7 @@ function getActionArr () {
 // Called when a new message is sent to the group chat
 function respond (req, res) {
   var request = req.body
-  console.log(request)
+
   // Return a normal 200 status code
   res.writeHead(200)
 
