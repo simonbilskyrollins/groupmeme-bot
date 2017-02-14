@@ -1,4 +1,4 @@
-# GroupMeme Bot [![Build Status](https://travis-ci.org/simonbilskyrollins/groupmeme-bot.svg?branch=master)](https://travis-ci.org/simonbilskyrollins/groupmeme-bot)
+# GroupMeme Bot [![Build Status](https://travis-ci.org/simonbilskyrollins/groupmeme-bot.svg?branch=master)](https://travis-ci.org/simonbilskyrollins/groupmeme-bot) [![Standard - JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
 ## Introduction
 
