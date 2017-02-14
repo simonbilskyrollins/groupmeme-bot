@@ -13,5 +13,6 @@ deploy:
   provider: heroku
   api_key:
     secure: Hu7E3mb83U68AWQrSIe0NCP7YUc+ATgzZ9NupRAls1ex8qcYw8qixwA1vHKoGlDLsWn8dsYqi1VQsOFV/13DTW9IEh3QfHOd9uS6FxdTB6oCTijauig+JIZa5iKsvlhMRjNyLeT8LfZ2P4yhC3b60HpP4BNkPDqbYD/lyL+cpIRks6Nso6TzCA2cNkSObGckaygpZSPz7QaL+qChCo1+mYBFGdijGBgTMVHP5tIqGaCjaTUI79W5rJrk9145jU4xqOhWuv08/IJ7/CbyplDrjeXlwohNyx/nVDhyzMQ1oTZvtQRUK9YMY5ECZbQcBf8O3LW/qERZhedJkRLm4AEFS+mOe1OmEO2g2lMujgAvfUiGbQdTIyI4eHpZ09D5/WU6ptAodHFBtmXxqHL5hnbjl+NJ+++O/KtfO8H7GVvT4rPyKH+GOlQgpgX5DgKAdgdL/VSaGlEJnlkbasAS13YFNs2T9NNthVsg4vydobpxGt6hBTCqArXE6bo998FsFE6BVo4Yhp5rvW92vNiFJ9HG+3vnX5i5aNgjRPjy2ETL6ac4cwD1FarDA+Sgn/EUdsfidDEvq7KIusHoD7IVZuJjIcVXFJT0eWilEa2ekBA45lx8T1shq7C2YiYtZ15SOJeR1qlHGzboa/z9FcG4tYmr0H/fVOrLcWuctzU1/SBimBw=
-  app: groupme-bot-beep-boop
-  on: master
+  app: 
+    master: groupme-bot-beep-boop
+    develop: test-groupme-bot-beep-boop
