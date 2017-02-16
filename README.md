@@ -3,7 +3,10 @@
 ## Introduction
 
 GroupMeme bot is a GroupMe bot running on a Node JS callback server that specializes in posting the best memes to the chat he lives in.
+
 The project is based on the [sample Node JS callback bot](https://github.com/groupme/bot-tutorial-nodejs) provided by GroupMe, which is a great place to get started if you want to set up a similar bot of your own.
+
+I gave [a presentation](https://github.com/simonbilskyrollins/groupme-bot-workshop) about Beep Boop to Carleton DevX in February 2017. [View the repository as it was at the time of the presentation](https://github.com/simonbilskyrollins/groupmeme-bot/tree/2ce3d09b886478c554b9be8a3b63293cac6ed260).
 
 # Get your bot up and running
 
