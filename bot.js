@@ -74,6 +74,16 @@ function getActionArr () {
       }
     },
 
+    // Ron Swanson is a pretty cool dude
+    {
+      regex: /\b(Ron|Swanson)\b/i,
+      action: function (inputString, nickname, userId) {
+        getRonSwansonQuote( function(quote) {
+          postMessage(quote || 'Sorry, something went wrong retrieving a Ron Swanson quote.')
+        })
+      }
+    }
+
     // You can call me "Al"
     {
       regex: /\bcall\s*\bme\b\s"(.*)"/i,
@@ -241,6 +251,25 @@ function getXkcd (number, callback) {
       callback(xkcd)
     } else if (err) {
       console.log('error retrieveing XKCD comic', url)
+      callback()
+    }
+  })
+}
+
+// Get a Ron Swanson quote
+function getRonSwansonQuote (callback) {
+  var url = 'http://ron-swanson-quotes.herokuapp.com/v2/quotes'
+  var options = {
+    url: url,
+    json: true
+  }
+  request(options, function (err, res, body) {
+    if (res.statusCode === 200) {
+      var quote = body[0]
+      console.log('retrieved Ron Swanson quote', quote)
+      callback(quote)
+    } else if (err) {
+      console.log('error retrieving Ron Swanson quote', err)
       callback()
     }
   })
