@@ -16,3 +16,4 @@ deploy:
   app: 
     master: groupme-bot-beep-boop
     develop: test-groupme-bot-beep-boop
+  skip_cleanup: true

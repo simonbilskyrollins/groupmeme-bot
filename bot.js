@@ -2,7 +2,7 @@ const HTTPS = require('https')
 const request = require('request')
 const fs = require('fs')
 const ImageService = require('groupme').ImageService // GroupMe image service wrapper
-const Snoowrap = require('snoowrap')  // Reddit API wrapper
+const Snoowrap = require('snoowrap') // Reddit API wrapper
 const pg = require('pg')
 
 // Get GroupMe bot ID
@@ -22,7 +22,7 @@ function getActionArr () {
     // fun warriors facts
     {
       regex: /\bwarriors\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
         if (nickname) {
           botResponse = 'Hey ' + nickname + ', did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
@@ -34,7 +34,7 @@ function getActionArr () {
     // Did I hear something about the patriarchy?
     {
       regex: /\bpatriarch(s|y|ical)?/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = 'Fuck the patriarchy!'
         if (nickname) {
           botResponse = 'Fuck the patriarchy, ' + nickname + '!'
@@ -46,7 +46,7 @@ function getActionArr () {
     // find wholesome memes
     {
       regex: /\bmemes?\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = 'I hope this brightens your day'
         if (nickname) {
           botResponse = 'I hope this brightens your day, ' + nickname
@@ -60,7 +60,7 @@ function getActionArr () {
     // pull xkcd comics
     {
       regex: /\b(xkcd|nerd|geek|dork|computer science)(s|y)?\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = ''
         if (nickname) {
           botResponse = 'Here you go, ' + nickname
@@ -70,6 +70,16 @@ function getActionArr () {
           getXkcd(randomNum.toString(), function (xkcd) {
             postImageMessage(botResponse, xkcd.img)
           })
+        })
+      }
+    },
+
+    // Ron Swanson is a pretty cool dude
+    {
+      regex: /\b(Ron|Swanson)\b/i,
+      action: function (inputString, nickname) {
+        getRonSwansonQuote(function (quote) {
+          postMessage(quote || 'Sorry, something went wrong retrieving a Ron Swanson quote.')
         })
       }
     },
@@ -126,12 +136,10 @@ function postMessage (botResponse, imageUrl) {
     body = {
       'bot_id': botID,
       'text': botResponse,
-      'attachments': [
-        {
-          'type': 'image',
-          'url': imageUrl
-        }
-      ]
+      'attachments': [{
+        'type': 'image',
+        'url': imageUrl
+      }]
     }
   } else {
     body = {
@@ -145,7 +153,7 @@ function postMessage (botResponse, imageUrl) {
   // actually post the message
   botReq = HTTPS.request(options, function (res) {
     if (res.statusCode === 202) {
-        // neat
+      // neat
     } else {
       console.log('rejecting bad status code ' + res.statusCode)
     }
@@ -186,20 +194,20 @@ function processImage (imageUrl, callback) {
   imageStream.on('close', function () {
     ImageService.post(
       'tmp-image',
-          function (err, ret) {
-            if (err) {
-              console.log('error posting image ', imageUrl, 'to GroupMe')
-              callback(err, null)
-            } else {
-              callback(null, ret.url)
-            }
-          })
+      function (err, ret) {
+        if (err) {
+          console.log('error posting image ', imageUrl, 'to GroupMe')
+          callback(err, null)
+        } else {
+          callback(null, ret.url)
+        }
+      })
   })
 }
 
 // Get top link from given subreddit
 function getMeme (subreddit, callback) {
-  r.getSubreddit(subreddit).getHot({limit: 20}).filter(post => {
+  r.getSubreddit(subreddit).getHot({ limit: 20 }).filter(post => {
     if (post.is_self === false && post.stickied === false && post.likes == null) {
       return post
     }
@@ -246,13 +254,32 @@ function getXkcd (number, callback) {
   })
 }
 
+// Get a Ron Swanson quote
+function getRonSwansonQuote (callback) {
+  var url = 'http://ron-swanson-quotes.herokuapp.com/v2/quotes'
+  var options = {
+    url: url,
+    json: true
+  }
+  request(options, function (err, res, body) {
+    if (res.statusCode === 200) {
+      var quote = body[0]
+      console.log('retrieved Ron Swanson quote', quote)
+      callback(quote)
+    } else if (err) {
+      console.log('error retrieving Ron Swanson quote', err)
+      callback()
+    }
+  })
+}
+
 /**
  * Helper method for detecting bot-response-worthy messages
  */
 function performActionIfAppropriate (request, isMatch, action, submitterId) {
   if (isMatch && request.name && request.name !== 'Beep Boop') {
     getNicknameAndFireOffAction(submitterId, action, request.text)
-    // action(request.text, submitterId);
+      // action(request.text, submitterId);
     return true
   }
   return false
@@ -332,9 +359,9 @@ function insertNickname (userId, nickname) {
   })
 }
 
- /**
-  * Given a userId, returns either "" or the user's nickname.
-  */
+/**
+ * Given a userId, returns either "" or the user's nickname.
+ */
 function getNicknameAndFireOffAction (userId, action, text) {
   var getQuery = {
     text: 'SELECT nickname FROM nicknames WHERE id=$1;',
