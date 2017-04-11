@@ -2,7 +2,7 @@ const HTTPS = require('https')
 const request = require('request')
 const fs = require('fs')
 const ImageService = require('groupme').ImageService // GroupMe image service wrapper
-const Snoowrap = require('snoowrap')  // Reddit API wrapper
+const Snoowrap = require('snoowrap') // Reddit API wrapper
 const pg = require('pg')
 
 // Get GroupMe bot ID
@@ -78,11 +78,11 @@ function getActionArr () {
     {
       regex: /\b(Ron|Swanson)\b/i,
       action: function (inputString, nickname) {
-        getRonSwansonQuote( function(quote) {
+        getRonSwansonQuote(function (quote) {
           postMessage(quote || 'Sorry, something went wrong retrieving a Ron Swanson quote.')
         })
       }
-    }
+    },
 
     // You can call me "Al"
     {
@@ -136,12 +136,10 @@ function postMessage (botResponse, imageUrl) {
     body = {
       'bot_id': botID,
       'text': botResponse,
-      'attachments': [
-        {
-          'type': 'image',
-          'url': imageUrl
-        }
-      ]
+      'attachments': [{
+        'type': 'image',
+        'url': imageUrl
+      }]
     }
   } else {
     body = {
@@ -155,7 +153,7 @@ function postMessage (botResponse, imageUrl) {
   // actually post the message
   botReq = HTTPS.request(options, function (res) {
     if (res.statusCode === 202) {
-        // neat
+      // neat
     } else {
       console.log('rejecting bad status code ' + res.statusCode)
     }
@@ -196,20 +194,20 @@ function processImage (imageUrl, callback) {
   imageStream.on('close', function () {
     ImageService.post(
       'tmp-image',
-          function (err, ret) {
-            if (err) {
-              console.log('error posting image ', imageUrl, 'to GroupMe')
-              callback(err, null)
-            } else {
-              callback(null, ret.url)
-            }
-          })
+      function (err, ret) {
+        if (err) {
+          console.log('error posting image ', imageUrl, 'to GroupMe')
+          callback(err, null)
+        } else {
+          callback(null, ret.url)
+        }
+      })
   })
 }
 
 // Get top link from given subreddit
 function getMeme (subreddit, callback) {
-  r.getSubreddit(subreddit).getHot({limit: 20}).filter(post => {
+  r.getSubreddit(subreddit).getHot({ limit: 20 }).filter(post => {
     if (post.is_self === false && post.stickied === false && post.likes == null) {
       return post
     }
@@ -281,7 +279,7 @@ function getRonSwansonQuote (callback) {
 function performActionIfAppropriate (request, isMatch, action, submitterId) {
   if (isMatch && request.name && request.name !== 'Beep Boop') {
     getNicknameAndFireOffAction(submitterId, action, request.text)
-    // action(request.text, submitterId);
+      // action(request.text, submitterId);
     return true
   }
   return false
@@ -361,9 +359,9 @@ function insertNickname (userId, nickname) {
   })
 }
 
- /**
-  * Given a userId, returns either "" or the user's nickname.
-  */
+/**
+ * Given a userId, returns either "" or the user's nickname.
+ */
 function getNicknameAndFireOffAction (userId, action, text) {
   var getQuery = {
     text: 'SELECT nickname FROM nicknames WHERE id=$1;',
