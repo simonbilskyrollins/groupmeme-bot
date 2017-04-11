@@ -22,7 +22,7 @@ function getActionArr () {
     // fun warriors facts
     {
       regex: /\bwarriors\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
         if (nickname) {
           botResponse = 'Hey ' + nickname + ', did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
@@ -34,7 +34,7 @@ function getActionArr () {
     // Did I hear something about the patriarchy?
     {
       regex: /\bpatriarch(s|y|ical)?/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = 'Fuck the patriarchy!'
         if (nickname) {
           botResponse = 'Fuck the patriarchy, ' + nickname + '!'
@@ -46,7 +46,7 @@ function getActionArr () {
     // find wholesome memes
     {
       regex: /\bmemes?\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = 'I hope this brightens your day'
         if (nickname) {
           botResponse = 'I hope this brightens your day, ' + nickname
@@ -60,7 +60,7 @@ function getActionArr () {
     // pull xkcd comics
     {
       regex: /\b(xkcd|nerd|geek|dork|computer science)(s|y)?\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         var botResponse = ''
         if (nickname) {
           botResponse = 'Here you go, ' + nickname
@@ -77,7 +77,7 @@ function getActionArr () {
     // Ron Swanson is a pretty cool dude
     {
       regex: /\b(Ron|Swanson)\b/i,
-      action: function (inputString, nickname, userId) {
+      action: function (inputString, nickname) {
         getRonSwansonQuote( function(quote) {
           postMessage(quote || 'Sorry, something went wrong retrieving a Ron Swanson quote.')
         })
