@@ -17,8 +17,7 @@
     "pg": "4.x"
   },
   "engines": {
-    "node": "7.4.0",
-    "npm": "4.0.5"
+    "node": "6.11.1"
   },
   "repository": {
     "type": "git",
