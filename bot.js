@@ -107,20 +107,24 @@ function respond (req, res) {
   // Return a normal 200 status code
   res.writeHead(200)
 
-  // Matching logic
-  var matched = false
-  getActionArr().forEach(function (actionResponse) {
-    matched = performActionIfAppropriate(request,
-      request.text && request.text.match(actionResponse.regex),
-      actionResponse.action, request.user_id) || matched
-  })
+  if (request.name && request.name === 'Beep Boop') {
+    console.log('ignoring message sent by Beep Boop')
+  } else {
+    // Matching logic
+    var matched = false
+    getActionArr().forEach(actionResponse => {
+      matched = performActionIfAppropriate(request,
+        request.text && request.text.match(actionResponse.regex),
+        actionResponse.action, request.user_id) || matched
+    })
 
-  if (!matched) {
-    let haiku = detectHaiku(request.text)
-    if (haiku) {
-      postMessage(haiku)
-    } else {
-      console.log("don't care: ", request.text)
+    if (!matched) {
+      let haiku = detectHaiku(request.text)
+      if (haiku) {
+        postMessage('That sounds like it would make a nice haiku:\n\n' + haiku)
+      } else {
+        console.log("don't care: ", request.text)
+      }
     }
   }
 
@@ -283,6 +287,7 @@ function detectHaiku (message) {
     return false
   } else {
     console.log('17-syllable message; checking for haiku')
+    let message = message.replace(/\r?\n|\r/g, ' ')
     let words = message.split(' ')
     let lineNumber = 1
     let syllablesToNextLine = 5
@@ -313,9 +318,8 @@ function detectHaiku (message) {
  * Helper method for detecting bot-response-worthy messages
  */
 function performActionIfAppropriate (request, isMatch, action, submitterId) {
-  if (isMatch && request.name && request.name !== 'Beep Boop') {
+  if (isMatch) {
     getNicknameAndFireOffAction(submitterId, action, request.text)
-      // action(request.text, submitterId);
     return true
   }
   return false
