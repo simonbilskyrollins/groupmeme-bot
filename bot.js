@@ -1,6 +1,7 @@
 const HTTPS = require('https')
 const request = require('request')
 const fs = require('fs')
+const syllable = require('syllable')
 const ImageService = require('groupme').ImageService // GroupMe image service wrapper
 const Snoowrap = require('snoowrap') // Reddit API wrapper
 const pg = require('pg')
@@ -114,9 +115,13 @@ function respond (req, res) {
       actionResponse.action, request.user_id) || matched
   })
 
-  // log stuff we ignored
   if (!matched) {
-    console.log("don't care: ", request.text)
+    let haiku = detectHaiku(request.text)
+    if (haiku) {
+      postMessage(haiku)
+    } else {
+      console.log("don't care: ", request.text)
+    }
   }
 
   res.end()
@@ -273,6 +278,37 @@ function getRonSwansonQuote (callback) {
   })
 }
 
+function detectHaiku(message) {
+  if (syllable(message) != 17) {
+    return false
+  } else {
+    console.log('17-syllable message; checking for haiku')
+    let words = message.split(' ')
+    let lineNumber = 1
+    let syllablesToNextLine = 5
+    let haiku = '';
+    words.forEach(word => {
+      haiku += word + ' '
+      let wordSyllables = syllable(word)
+      syllablesToNextLine -= wordSyllables
+      if (syllablesToNextLine < 0) {
+        haiku = false
+        console.log('no dice on the haiku :(')
+      } else if (syllablesToNextLine == 0) {
+        lineNumber++
+        if (lineNumber == 2) {
+          haiku += '\n'
+          syllablesToNextLine = 7
+        } else if (lineNumber == 3) {
+          haiku += '\n'
+          syllablesToNextLine = 5
+        }
+      }
+    })
+    return haiku
+  }
+}
+
 /**
  * Helper method for detecting bot-response-worthy messages
  */
@@ -389,3 +425,4 @@ function getNicknameAndFireOffAction (userId, action, text) {
 exports.respond = respond
 exports.postMessage = postMessage
 exports.postImageMessage = postImageMessage
+exports.haiku = detectHaiku

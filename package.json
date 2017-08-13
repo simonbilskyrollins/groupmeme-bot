@@ -13,10 +13,11 @@
     "body-parser": "^1.16.0",
     "express": "^4.14.1",
     "groupme": "^0.5.7",
+    "pg": "4.x",
     "pug": "^2.0.0-beta10",
     "request": "^2.79.0",
     "snoowrap": "^1.12.0",
-    "pg": "4.x"
+    "syllable": "2.2.0"
   },
   "engines": {
     "node": "6.11.1"
