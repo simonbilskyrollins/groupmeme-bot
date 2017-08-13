@@ -288,6 +288,7 @@ function detectHaiku (message) {
   } else {
     console.log('17-syllable message; checking for haiku')
     message = message.replace(/\r?\n|\r/g, ' ')
+    message = message.replace(/\s+/g, ' ')
     let words = message.split(' ')
     let lineNumber = 1
     let syllablesToNextLine = 5
