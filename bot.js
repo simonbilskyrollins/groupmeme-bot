@@ -287,13 +287,13 @@ function detectHaiku (message) {
     return false
   } else {
     console.log('17-syllable message; checking for haiku')
-    let message = message.replace(/\r?\n|\r/g, ' ')
+    message = message.replace(/\r?\n|\r/g, ' ')
     let words = message.split(' ')
     let lineNumber = 1
     let syllablesToNextLine = 5
     let haiku = ''
     words.forEach(word => {
-      haiku += word + ' '
+      haiku += word
       let wordSyllables = syllable(word)
       syllablesToNextLine -= wordSyllables
       if (syllablesToNextLine < 0) {
@@ -308,6 +308,8 @@ function detectHaiku (message) {
           haiku += '\n'
           syllablesToNextLine = 5
         }
+      } else {
+        haiku += ' '
       }
     })
     return haiku
@@ -429,4 +431,3 @@ function getNicknameAndFireOffAction (userId, action, text) {
 exports.respond = respond
 exports.postMessage = postMessage
 exports.postImageMessage = postImageMessage
-exports.haiku = detectHaiku
