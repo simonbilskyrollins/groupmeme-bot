@@ -1,6 +1,7 @@
 const HTTPS = require('https')
 const request = require('request')
 const fs = require('fs')
+const syllable = require('syllable')
 const ImageService = require('groupme').ImageService // GroupMe image service wrapper
 const Snoowrap = require('snoowrap') // Reddit API wrapper
 const pg = require('pg')
@@ -22,7 +23,7 @@ function getActionArr () {
     // fun warriors facts
     {
       regex: /\bwarriors\b/i,
-      action: function (inputString, nickname) {
+      action: (inputString, nickname) => {
         var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
         if (nickname) {
           botResponse = 'Hey ' + nickname + ', did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
@@ -34,7 +35,7 @@ function getActionArr () {
     // Did I hear something about the patriarchy?
     {
       regex: /\bpatriarch(s|y|ical)?/i,
-      action: function (inputString, nickname) {
+      action: (inputString, nickname) => {
         var botResponse = 'Fuck the patriarchy!'
         if (nickname) {
           botResponse = 'Fuck the patriarchy, ' + nickname + '!'
@@ -46,12 +47,12 @@ function getActionArr () {
     // find wholesome memes
     {
       regex: /\bmemes?\b/i,
-      action: function (inputString, nickname) {
+      action: (inputString, nickname) => {
         var botResponse = 'I hope this brightens your day'
         if (nickname) {
           botResponse = 'I hope this brightens your day, ' + nickname
         }
-        getMeme('wholesomememes', function (imageUrl) {
+        getMeme('wholesomememes', (imageUrl) => {
           postImageMessage(botResponse, imageUrl)
         })
       }
@@ -60,14 +61,14 @@ function getActionArr () {
     // pull xkcd comics
     {
       regex: /\b(xkcd|nerd|geek|dork|computer science)(s|y)?\b/i,
-      action: function (inputString, nickname) {
+      action: (inputString, nickname) => {
         var botResponse = ''
         if (nickname) {
           botResponse = 'Here you go, ' + nickname
         }
-        getXkcd('', function (xkcd) {
+        getXkcd('', xkcd => {
           var randomNum = Math.ceil(Math.random() * xkcd.num)
-          getXkcd(randomNum.toString(), function (xkcd) {
+          getXkcd(randomNum.toString(), xkcd => {
             postImageMessage(botResponse, xkcd.img)
           })
         })
@@ -77,8 +78,8 @@ function getActionArr () {
     // Ron Swanson is a pretty cool dude
     {
       regex: /\b(Ron|Swanson)\b/i,
-      action: function (inputString, nickname) {
-        getRonSwansonQuote(function (quote) {
+      action: (inputString, nickname) => {
+        getRonSwansonQuote(quote => {
           postMessage(quote || 'Sorry, something went wrong retrieving a Ron Swanson quote.')
         })
       }
@@ -87,7 +88,7 @@ function getActionArr () {
     // You can call me "Al"
     {
       regex: /\bcall\s*\bme\b\s"(.*)"/i,
-      action: function (inputString, nickname, userId) {
+      action: (inputString, nickname, userId) => {
         // fix this (there should be a way to get "this.regex"):
         var hackyRegex = new RegExp('.*\\bcall\\s*\\bme\\b\\s"(.*)".*', 'i')
         var newNickname = inputString.match(hackyRegex)[1]
@@ -106,17 +107,25 @@ function respond (req, res) {
   // Return a normal 200 status code
   res.writeHead(200)
 
-  // Matching logic
-  var matched = false
-  getActionArr().forEach(function (actionResponse) {
-    matched = performActionIfAppropriate(request,
-      request.text && request.text.match(actionResponse.regex),
-      actionResponse.action, request.user_id) || matched
-  })
+  if (request.name && request.name === 'Beep Boop') {
+    console.log('ignoring message sent by Beep Boop')
+  } else {
+    // Matching logic
+    var matched = false
+    getActionArr().forEach(actionResponse => {
+      matched = performActionIfAppropriate(request,
+        request.text && request.text.match(actionResponse.regex),
+        actionResponse.action, request.user_id) || matched
+    })
 
-  // log stuff we ignored
-  if (!matched) {
-    console.log("don't care: ", request.text)
+    if (!matched) {
+      let haiku = detectHaiku(request.text)
+      if (haiku) {
+        postMessage('That sounds like it would make a nice haiku:\n\n' + haiku)
+      } else {
+        console.log("don't care: ", request.text)
+      }
+    }
   }
 
   res.end()
@@ -151,7 +160,7 @@ function postMessage (botResponse, imageUrl) {
   console.log('sending ' + botResponse + ' to ' + botID)
 
   // actually post the message
-  botReq = HTTPS.request(options, function (res) {
+  botReq = HTTPS.request(options, res => {
     if (res.statusCode === 202) {
       // neat
     } else {
@@ -159,10 +168,10 @@ function postMessage (botResponse, imageUrl) {
     }
   })
 
-  botReq.on('error', function (err) {
+  botReq.on('error', err => {
     console.log('error posting message ' + JSON.stringify(err))
   })
-  botReq.on('timeout', function (err) {
+  botReq.on('timeout', err => {
     console.log('timeout posting message ' + JSON.stringify(err))
   })
   botReq.end(JSON.stringify(body))
@@ -171,7 +180,7 @@ function postMessage (botResponse, imageUrl) {
 // postMessage wrapper that takes care of annoying image-posting details
 function postImageMessage (botResponse, imageUrl) {
   if (imageUrl) {
-    processImage(imageUrl, function (err, processedImageUrl) {
+    processImage(imageUrl, (err, processedImageUrl) => {
       if (err) {
         return
       } else {
@@ -191,10 +200,10 @@ function processImage (imageUrl, callback) {
   var imageStream = fs.createWriteStream('tmp-image')
   request(imageUrl).pipe(imageStream)
 
-  imageStream.on('close', function () {
+  imageStream.on('close', () => {
     ImageService.post(
       'tmp-image',
-      function (err, ret) {
+      (err, ret) => {
         if (err) {
           console.log('error posting image ', imageUrl, 'to GroupMe')
           callback(err, null)
@@ -237,7 +246,7 @@ function getXkcd (number, callback) {
     url: url,
     json: true
   }
-  request(options, function (err, res, body) {
+  request(options, (err, res, body) => {
     if (res.statusCode === 200) {
       console.log('retrieved XKCD comic', body.num, body.img)
       var xkcd = {
@@ -261,7 +270,7 @@ function getRonSwansonQuote (callback) {
     url: url,
     json: true
   }
-  request(options, function (err, res, body) {
+  request(options, (err, res, body) => {
     if (res.statusCode === 200) {
       var quote = body[0]
       console.log('retrieved Ron Swanson quote', quote)
@@ -273,13 +282,47 @@ function getRonSwansonQuote (callback) {
   })
 }
 
+function detectHaiku (message) {
+  if (syllable(message) !== 17) {
+    return false
+  } else {
+    console.log('17-syllable message; checking for haiku')
+    message = message.replace(/\r?\n|\r/g, ' ')
+    message = message.replace(/\s+/g, ' ')
+    let words = message.split(' ')
+    let lineNumber = 1
+    let syllablesToNextLine = 5
+    let haiku = ''
+    words.forEach(word => {
+      haiku += word
+      let wordSyllables = syllable(word)
+      syllablesToNextLine -= wordSyllables
+      if (syllablesToNextLine < 0) {
+        haiku = false
+        console.log('no dice on the haiku :(')
+      } else if (syllablesToNextLine === 0) {
+        lineNumber++
+        if (lineNumber === 2) {
+          haiku += '\n'
+          syllablesToNextLine = 7
+        } else if (lineNumber === 3) {
+          haiku += '\n'
+          syllablesToNextLine = 5
+        }
+      } else {
+        haiku += ' '
+      }
+    })
+    return haiku
+  }
+}
+
 /**
  * Helper method for detecting bot-response-worthy messages
  */
 function performActionIfAppropriate (request, isMatch, action, submitterId) {
-  if (isMatch && request.name && request.name !== 'Beep Boop') {
+  if (isMatch) {
     getNicknameAndFireOffAction(submitterId, action, request.text)
-      // action(request.text, submitterId);
     return true
   }
   return false
@@ -294,12 +337,12 @@ function addIdNicknameRowToDatabase (userId, nickname) {
     text: 'SELECT * FROM nicknames WHERE id=$1;',
     values: [userId]
   }
-  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+  pg.connect(process.env.DATABASE_URL, (err, client, done) => {
     if (err) {
       console.error(err)
     }
     var entryExists = false
-    client.query(existenceQuery, function (err, result) {
+    client.query(existenceQuery, (err, result) => {
       done()
       if (err) {
         console.error(err)
@@ -324,11 +367,11 @@ function updateNickname (userId, nickname) {
     text: 'UPDATE nicknames SET nickname = $1 WHERE id = $2;',
     values: [nickname, userId]
   }
-  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+  pg.connect(process.env.DATABASE_URL, (err, client, done) => {
     if (err) {
       console.error(err)
     }
-    client.query(updateQuery, function (err, result) {
+    client.query(updateQuery, (err, result) => {
       done()
       if (err) {
         console.error(err)
@@ -344,11 +387,11 @@ function insertNickname (userId, nickname) {
     text: 'INSERT INTO nicknames (id, nickname) VALUES ($1, $2)',
     values: [userId, nickname]
   }
-  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+  pg.connect(process.env.DATABASE_URL, (err, client, done) => {
     if (err) {
       console.error(err)
     }
-    client.query(insertQuery, function (err, result) {
+    client.query(insertQuery, (err, result) => {
       done()
       if (err) {
         console.error(err)
@@ -367,11 +410,11 @@ function getNicknameAndFireOffAction (userId, action, text) {
     text: 'SELECT nickname FROM nicknames WHERE id=$1;',
     values: [userId]
   }
-  pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+  pg.connect(process.env.DATABASE_URL, (err, client, done) => {
     if (err) {
       console.error(err)
     }
-    client.query(getQuery, function (err, result) {
+    client.query(getQuery, (err, result) => {
       done()
       if (err) {
         console.error(err)
