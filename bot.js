@@ -278,15 +278,15 @@ function getRonSwansonQuote (callback) {
   })
 }
 
-function detectHaiku(message) {
-  if (syllable(message) != 17) {
+function detectHaiku (message) {
+  if (syllable(message) !== 17) {
     return false
   } else {
     console.log('17-syllable message; checking for haiku')
     let words = message.split(' ')
     let lineNumber = 1
     let syllablesToNextLine = 5
-    let haiku = '';
+    let haiku = ''
     words.forEach(word => {
       haiku += word + ' '
       let wordSyllables = syllable(word)
@@ -294,12 +294,12 @@ function detectHaiku(message) {
       if (syllablesToNextLine < 0) {
         haiku = false
         console.log('no dice on the haiku :(')
-      } else if (syllablesToNextLine == 0) {
+      } else if (syllablesToNextLine === 0) {
         lineNumber++
-        if (lineNumber == 2) {
+        if (lineNumber === 2) {
           haiku += '\n'
           syllablesToNextLine = 7
-        } else if (lineNumber == 3) {
+        } else if (lineNumber === 3) {
           haiku += '\n'
           syllablesToNextLine = 5
         }
