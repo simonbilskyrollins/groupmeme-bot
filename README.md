@@ -1,5 +1,6 @@
 # GroupMeme Bot
-[![Build Status](https://travis-ci.org/simonbilskyrollins/groupmeme-bot.svg?branch=master)](https://travis-ci.org/simonbilskyrollins/groupmeme-bot) [![Standard - JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+[![Build Status](https://travis-ci.org/simonbilskyrollins/groupmeme-bot.svg?branch=master)](https://travis-ci.org/simonbilskyrollins/groupmeme-bot)
+[![Standard - JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 [![Coverage Status](https://coveralls.io/repos/github/simonbilskyrollins/groupmeme-bot/badge.svg?branch=master)](https://coveralls.io/github/simonbilskyrollins/groupmeme-bot?branch=master)
 
 ## Introduction
@@ -23,15 +24,16 @@ On your computer, run `cp .sample-env .env` to create your own local configurati
 
 ## Connect to the Reddit API
 
-If you want to be able to pull memes from Reddit, you will need to log into Reddit and create an app. Then you will need to give the app permission to access your account. Teddy Katz's [utility](https://github.com/not-an-aardvark/reddit-oauth-helper) that you can install with `npm install -g reddit-oauth-helper` is a good way to set everything up.
+If you want to be able to pull memes from Reddit, you will need to log into Reddit and create a web app. Then you will need to give the app permission to access your account. Teddy Katz's [utility](https://github.com/not-an-aardvark/reddit-oauth-helper) that you can install with `npm install -g reddit-oauth-helper` is a good way to set everything up.
 
 Now you can put the appropriate values in your `.env` file and also create new environment variables of the same name in your Heroku deployment.
 
 ## Start the server
 
-To test locally, you will first need to download and install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli). Then, open terminal and run the following command to start a local server.
+To test locally, you will first need to download and install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli). Then, open terminal and run the following commands to install the required packages and then start a local server.
 
-    $ heroku local
+    npm install
+    heroku local
 
 Then navigate to `http://127.0.0.1:5000/` in a browser.
 
