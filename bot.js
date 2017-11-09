@@ -24,9 +24,13 @@ function getActionArr () {
     {
       regex: /\bwarriors\b/i,
       action: (inputString, nickname) => {
-        var botResponse = 'Did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
+        var botResponse = 'Did you know that the Golden State Warriors hold the record for the best regular season in NBA history? They went 73-9 in the 2015-2016 season!'
         if (nickname) {
-          botResponse = 'Hey ' + nickname + ', did you know that the Golden State Warriors blew a 3-1 lead in the 2016 NBA Finals?'
+          if (request.name !== 'Stephanie Levine') {
+            botResponse = 'I bet Stephanie could beat ' + nickname + ' in a fight.'
+          } else {
+            botResponse = 'I agree.'
+          }
         }
         postMessage(botResponse)
       }
